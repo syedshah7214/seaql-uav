@@ -1,0 +1,19 @@
+{
+  "seed": 42,
+  "test_size": 0.2,
+  "val_size": 0.2,
+  "max_rows": 0,
+  "n_clients": 8,
+  "n_clusters": 2,
+  "dirichlet_alpha": 0.3,
+  "fl_rounds": 5,
+  "local_epochs": 1,
+  "batch_size": 512,
+  "learning_rate": 0.002,
+  "weight_decay": 0.0001,
+  "patience": 3,
+  "compression_topk": 0.25,
+  "continual_chunks": 5,
+  "replay_per_class": 150,
+  "device": "cpu"
+}

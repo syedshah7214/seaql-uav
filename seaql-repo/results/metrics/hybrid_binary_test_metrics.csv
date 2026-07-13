@@ -1,0 +1,2 @@
+accuracy,balanced_accuracy,macro_f1,attack_precision,attack_recall,benign_precision,benign_recall,auc,model
+0.9433620299048482,0.9476354151731308,0.9326936148831858,0.982304799823048,0.9377111486486487,0.8595238095238096,0.9575596816976127,0.9832917010179941,Hybrid AE-Stacked Ensemble (binary attack-detection)

@@ -1,0 +1,3 @@
+mechanism,available,sign_ms,verify_ms,public_key_bytes,signature_bytes,note
+SHA3-256 update digest,True,0.20117600001867686,,,32.0,Integrity primitive; not a digital signature.
+ML-DSA (optional),False,,,,,Install python-oqs and liboqs to execute real PQC benchmark; pipeline remains reproducible without silently substituting a non-PQC signature.

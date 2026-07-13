@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+*.egg-info/
+venv/
+.env
+node_modules/
+uav_fl_results*/
+executed_test.ipynb

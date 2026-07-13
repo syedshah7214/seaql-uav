@@ -1,0 +1,2 @@
+accuracy,balanced_accuracy,macro_f1,weighted_f1,macro_ovr_auc,model,rounds_run,parameters
+0.6311425061425061,0.6514190516887867,0.5973355967776592,0.5823788793069787,0.7994475079628999,Hierarchical Federated MLP,5,12931

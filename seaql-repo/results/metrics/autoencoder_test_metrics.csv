@@ -1,0 +1,2 @@
+model,threshold,accuracy,balanced_accuracy,f1,roc_auc,epochs,score_direction
+Autoencoder anomaly detector,-96891526184960.0,0.7162162162162162,0.49989281886388,0.8346456692913385,0.8299718381129622,11,-1

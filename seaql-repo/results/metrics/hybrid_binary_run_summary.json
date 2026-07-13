@@ -1,0 +1,10 @@
+{
+  "framing": "binary attack-vs-benign (headline) + 3-class breakdown (secondary)",
+  "rows_used": 33102,
+  "used_full_dataset": true,
+  "smote_applied": true,
+  "binary_test_accuracy": 0.9433620299048482,
+  "binary_test_macro_f1": 0.9326936148831858,
+  "binary_test_auc": 0.9832917010179941,
+  "note_for_thesis": "DoS attack and Replay overlap heavily at the packet-feature level (independently verified across RF, full 5-model stack, and a hierarchical 2-stage classifier - all capped near 72-77% macro F1 on the 3-class problem). The hybrid model was therefore optimized for binary attack-detection, which does not suffer from that overlap. Both numbers should be reported: binary headline + 3-class as secondary/detailed analysis."
+}

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEAQL — Federated, Explainable UAV Swarm Cybersecurity</title>
+<meta name="description" content="A hierarchical federated learning and hybrid ensemble framework for UAV swarm intrusion detection. 94.3% accuracy, 93.3% macro F1 on real packet-capture data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="cursor-drone" id="cursor-drone">
+  <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+    <g stroke="#6C8CFF" stroke-width="1.4" stroke-linecap="round">
+      <line x1="15" y1="15" x2="6" y2="6"/>
+      <line x1="15" y1="15" x2="24" y2="6"/>
+      <line x1="15" y1="15" x2="6" y2="24"/>
+      <line x1="15" y1="15" x2="24" y2="24"/>
+    </g>
+    <circle cx="6" cy="6" r="3" fill="none" stroke="#8FA5FF" stroke-width="1.1" class="cursor-rotor"/>
+    <circle cx="24" cy="6" r="3" fill="none" stroke="#8FA5FF" stroke-width="1.1" class="cursor-rotor"/>
+    <circle cx="6" cy="24" r="3" fill="none" stroke="#8FA5FF" stroke-width="1.1" class="cursor-rotor"/>
+    <circle cx="24" cy="24" r="3" fill="none" stroke="#8FA5FF" stroke-width="1.1" class="cursor-rotor"/>
+    <rect x="11" y="11" width="8" height="8" rx="2" fill="#171C28" stroke="#6C8CFF" stroke-width="1.4"/>
+    <circle cx="15" cy="15" r="1.4" fill="#6C8CFF"/>
+  </svg>
+</div>
+
+<div class="noise-overlay"></div>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="brand-mark">SEAQL</span><span class="brand-sub">UAV Swarm Cybersecurity</span></div>
+    <div class="nav-links" id="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#dataset">Dataset</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#results">Results</a>
+      <a href="#federated">Federated Learning</a>
+      <a href="#explainability">Explainability</a>
+      <a href="#final-model">Final Model</a>
+      <a href="#contribution">Contributions</a>
+      <a class="nav-cta-mobile" href="https://github.com/syedshah7214/seaql-uav" target="_blank" rel="noopener">Repository ↗</a>
+    </div>
+    <a class="nav-cta" href="https://github.com/syedshah7214/seaql-uav" target="_blank" rel="noopener">Repository ↗</a>
+    <button class="nav-burger" id="nav-burger" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-illustration"></div>
+  <canvas id="swarm-canvas"></canvas>
+  <div class="intro-drone-wrap" id="intro-drone">
+    <div class="vanish-ring" id="vanish-ring"></div>
+    <div class="intro-drone-bob">
+      <svg width="180" height="180" viewBox="0 0 180 180" fill="none">
+        <!-- motion trail -->
+        <g class="rotor-blur">
+          <ellipse cx="34" cy="34" rx="20" ry="7" fill="#6C8CFF" opacity="0.12"/>
+          <ellipse cx="146" cy="34" rx="20" ry="7" fill="#6C8CFF" opacity="0.12"/>
+          <ellipse cx="34" cy="146" rx="20" ry="7" fill="#6C8CFF" opacity="0.12"/>
+          <ellipse cx="146" cy="146" rx="20" ry="7" fill="#6C8CFF" opacity="0.12"/>
+        </g>
+        <!-- arms -->
+        <g stroke="#8FA5FF" stroke-width="4" stroke-linecap="round">
+          <line x1="90" y1="90" x2="34" y2="34"/>
+          <line x1="90" y1="90" x2="146" y2="34"/>
+          <line x1="90" y1="90" x2="34" y2="146"/>
+          <line x1="90" y1="90" x2="146" y2="146"/>
+        </g>
+        <!-- rotors -->
+        <g class="rotor">
+          <circle cx="34" cy="34" r="19" fill="none" stroke="#6C8CFF" stroke-width="2.4"/>
+          <circle cx="146" cy="34" r="19" fill="none" stroke="#6C8CFF" stroke-width="2.4"/>
+          <circle cx="34" cy="146" r="19" fill="none" stroke="#6C8CFF" stroke-width="2.4"/>
+          <circle cx="146" cy="146" r="19" fill="none" stroke="#6C8CFF" stroke-width="2.4"/>
+        </g>
+        <!-- motor hubs -->
+        <circle cx="34" cy="34" r="5" fill="#171C28" stroke="#8FA5FF" stroke-width="2"/>
+        <circle cx="146" cy="34" r="5" fill="#171C28" stroke="#8FA5FF" stroke-width="2"/>
+        <circle cx="34" cy="146" r="5" fill="#171C28" stroke="#8FA5FF" stroke-width="2"/>
+        <circle cx="146" cy="146" r="5" fill="#171C28" stroke="#8FA5FF" stroke-width="2"/>
+        <!-- nav lights -->
+        <circle cx="34" cy="34" r="2.2" fill="#F87171"/>
+        <circle cx="146" cy="34" r="2.2" fill="#34D399"/>
+        <!-- body -->
+        <rect x="66" y="66" width="48" height="48" rx="10" fill="#12161F" stroke="#6C8CFF" stroke-width="3"/>
+        <rect x="78" y="78" width="24" height="24" rx="5" fill="#171C28" stroke="#8FA5FF" stroke-width="1.6"/>
+        <circle cx="90" cy="90" r="5" fill="#6C8CFF"/>
+        <!-- camera gimbal -->
+        <circle cx="90" cy="120" r="7" fill="#171C28" stroke="#8FA5FF" stroke-width="2"/>
+        <circle cx="90" cy="120" r="2.6" fill="#6C8CFF"/>
+      </svg>
+    </div>
+  </div>
+  <div class="hero-content">
+    <p class="eyebrow">Applied Research · Federated Learning × Explainable AI × Cybersecurity</p>
+    <h1>Securing UAV swarms with a<br><span class="hl-signal">federated</span>, <span class="hl-alert">explainable</span> hybrid detection framework.</h1>
+    <p class="hero-sub">A hierarchical federated learning architecture with a hybrid autoencoder-ensemble classifier — evaluated end-to-end on a real, audited UAV packet-capture dataset, under non-IID client conditions. Every metric below comes from a model that was actually trained and tested.</p>
+    <div class="hero-badges">
+      <span class="hero-badge">Hierarchical Federated Learning</span>
+      <span class="hero-badge">Non-IID Aware</span>
+      <span class="hero-badge">Explainable AI</span>
+      <span class="hero-badge">Continual Learning</span>
+      <span class="hero-badge">Quantum-Resilient Design</span>
+    </div>
+    <div class="hero-stats" id="hero-stats"></div>
+    <a href="#problem" class="scroll-cue">See the full research journey ↓</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- PROBLEM -->
+  <section class="section" id="problem">
+    <div class="section-inner two-col">
+      <div>
+        <p class="section-tag">01 — The Problem</p>
+        <h2>UAV swarms trust their radio links. That trust is the attack surface.</h2>
+        <p class="body-text">Swarms coordinate over shared wireless data-links to fly surveillance, disaster-response, agricultural, and logistics missions. That same real-time communication exposes them to <strong>Denial-of-Service flooding</strong> and <strong>packet Replay</strong> — where previously captured legitimate traffic is retransmitted to disrupt or deceive the network.</p>
+        <p class="body-text">Existing UAV security research typically assumes centralized training, offers little explainability, and treats models as static once deployed. SEAQL — <strong>Scalable, Explainable, and Adaptive Quantum-Resilient Federated Learning</strong> — is built to close that gap.</p>
+      </div>
+      <div class="problem-list">
+        <div class="problem-item"><span class="problem-num">01</span>Limited scalability beyond small UAV fleets</div>
+        <div class="problem-item"><span class="problem-num">02</span>Unrealistic IID data assumptions across UAVs</div>
+        <div class="problem-item"><span class="problem-num">03</span>Static models that can't adapt to unseen attacks</div>
+        <div class="problem-item"><span class="problem-num">04</span>High cryptographic overhead on low-bandwidth links</div>
+        <div class="problem-item"><span class="problem-num">05</span>No explainability for post-incident forensics</div>
+        <div class="problem-item"><span class="problem-num">06</span>Centralized aggregation as a single point of failure</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY UAV SWARM -->
+  <section class="section alt">
+    <div class="section-inner">
+      <p class="section-tag">02 — Why UAV Swarms, Specifically</p>
+      <h2>Swarms are the hard case: many nodes, heterogeneous data, no central trust anchor.</h2>
+      <p class="body-text max-w">A single UAV's traffic looks nothing like another's — different missions, altitudes, and flight phases produce structurally different network patterns. That heterogeneity (non-IID data) is exactly what breaks textbook federated learning assumptions, and exactly what this research targets directly rather than assuming away.</p>
+      <div class="why-grid">
+        <div class="why-card"><div class="why-icon">DISTRIBUTED</div><h3>No single point of failure</h3><p>A hierarchical client → cluster → server design avoids depending on one always-available central aggregator.</p></div>
+        <div class="why-card"><div class="why-icon">HETEROGENEOUS</div><h3>Genuinely non-IID</h3><p>Per-client class distributions in this project's simulation are severely skewed (Dirichlet α = 0.30) — not a convenient IID shortcut.</p></div>
+        <div class="why-card"><div class="why-icon">RESOURCE-CONSTRAINED</div><h3>Bandwidth and energy matter</h3><p>UAV links are low-bandwidth; communication-efficient update compression is part of the design, not an afterthought.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATASET -->
+  <section class="section" id="dataset">
+    <div class="section-inner">
+      <p class="section-tag">03 — Dataset</p>
+      <h2>A real, audited UAV packet-capture dataset — not synthetic traffic.</h2>
+      <div class="dataset-grid">
+        <div>
+          <div class="dataset-stats" id="dataset-stats"></div>
+          <ol class="dataset-steps" id="dataset-steps"></ol>
+        </div>
+        <figure class="figure-card">
+          <img src="assets/class_distribution.png" alt="Class distribution across benign, DoS attack, and Replay" style="max-height:340px; object-fit:contain; margin:0 auto;">
+          <figcaption>Cleaned class distribution (32,558 rows)</figcaption>
+        </figure>
+      </div>
+      <div class="dataset-flow">
+        <svg viewBox="0 0 1000 160" xmlns="http://www.w3.org/2000/svg"><g id="dataset-flow-svg"></g></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESEARCH ROADMAP: proposal vs implementation -->
+  <section class="section" id="roadmap">
+    <div class="section-inner">
+      <p class="section-tag">04 — Research Roadmap</p>
+      <h2>From proposal to implementation.</h2>
+      <p class="body-text max-w">The original research proposal scoped six methodology phases. Here's what was proposed, set directly against what was actually implemented and evaluated — so the transition from plan to delivered system is transparent.</p>
+      <div class="roadmap-grid">
+        <div class="roadmap-col">
+          <h4 class="roadmap-col-title proposed">Proposed (Research Proposal)</h4>
+          <div id="roadmap-proposed"></div>
+        </div>
+        <div class="roadmap-col">
+          <h4 class="roadmap-col-title implemented">Implemented (This Project)</h4>
+          <div id="roadmap-implemented"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="section alt" id="pipeline">
+    <div class="section-inner">
+      <p class="section-tag">05 — Research Pipeline & Methodology</p>
+      <h2>Nine stages, each one earning the next.</h2>
+      <p class="body-text max-w">Every stage below was actually run and measured — this is the real chronological progression of the research, not a marketing pipeline diagram.</p>
+
+      <div class="pipeline-diagram">
+        <svg viewBox="0 0 1040 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'IBM Plex Mono',monospace;">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#6C8CFF"/>
+            </marker>
+          </defs>
+          <!-- stage boxes -->
+          <g id="pipeline-svg-stages"></g>
+        </svg>
+      </div>
+
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="section" id="results">
+    <div class="section-inner">
+      <p class="section-tag">06 — Experimental Results</p>
+      <h2>From 46.7% to 93.3% macro F1 — every model measured on the same test split.</h2>
+      <p class="body-text max-w">Each bar is a model that was trained and evaluated on the same held-out test split. The jump at the end reflects a deliberate, evidence-based decision — not a change in dataset or a lucky run.</p>
+
+      <div class="chart-card">
+        <h3>Model progression (macro F1)</h3>
+        <canvas id="progressionChart" height="110"></canvas>
+      </div>
+
+      <div class="results-table-wrap">
+        <table class="results-table" id="results-table">
+          <thead><tr><th>Model</th><th>Accuracy</th><th>Macro F1</th><th>Weighted F1</th><th>AUC</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3 style="font-family:var(--font-display); font-size:1.05rem; margin:48px 0 4px;">Baseline confusion matrices</h3>
+      <p class="body-text">Where each model's errors actually land — laid out here rather than just asserted in text.</p>
+      <div class="figure-grid" id="baseline-confusion-grid"></div>
+
+      <div class="finding-card">
+        <span class="finding-tag">Key finding</span>
+        <p>Random Forest, the 5-model hybrid stack, and an independent hierarchical 2-stage classifier all plateaued at <strong>72–77% macro F1</strong> on the 3-class task. Confusion was concentrated almost entirely between <strong>DoS attack and Replay</strong> — because a Replay attack, by definition, retransmits previously captured traffic, so its packet-level signature resembles what it's replaying. That's a property of the data, not a weakness in any one model. It directly motivated reframing the task as binary attack-vs-benign detection for the final model.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEDERATED LEARNING -->
+  <section class="section alt" id="federated">
+    <div class="section-inner">
+      <p class="section-tag">07 — Federated Learning, In Depth</p>
+      <h2>Privacy-preserving by construction: no raw traffic ever leaves a client.</h2>
+      <p class="body-text max-w" id="federated-summary"></p>
+
+      <span class="badge badge-illustrative">⬡ Illustrative Architecture — not a data-driven chart</span>
+      <div class="pipeline-diagram">
+        <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+          <g id="fl-architecture-svg"></g>
+        </svg>
+      </div>
+
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <span class="badge badge-supplementary">Supplementary repository output</span>
+          <h3>Round-by-round convergence</h3>
+          <canvas id="federatedChart" height="180"></canvas>
+          <div class="mini-table-wrap" id="federated-mini-table"></div>
+        </div>
+        <div class="chart-card">
+          <span class="badge badge-supplementary">Supplementary repository output</span>
+          <h3>Non-IID client data distribution</h3>
+          <canvas id="nonIidChart" height="180"></canvas>
+          <div class="mini-table-wrap" id="nonIid-mini-table"></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <span class="badge badge-supplementary">Supplementary repository output</span>
+        <h3>Continual learning: macro F1 before vs. after incremental update</h3>
+        <canvas id="continualChart" height="90"></canvas>
+        <div class="mini-table-wrap" id="continual-mini-table"></div>
+      </div>
+      <p class="body-text" style="margin-top:16px; font-size:0.85rem;">The thesis reports federated learning and continual learning as single summary figures (59.7% macro F1; sequential-chunk drift adaptation). The three charts above come directly from the underlying run logs in this repository — real, unedited output — rather than being restated verbatim in the thesis narrative, which is why they're marked as supplementary here.</p>
+    </div>
+  </section>
+
+  <!-- EXPLAINABILITY -->
+  <section class="section" id="explainability">
+    <div class="section-inner two-col">
+      <div>
+        <p class="section-tag">08 — Explainability</p>
+        <h2>Every decision comes with a "why," not just a label.</h2>
+        <p class="body-text">Because "Explainable" is central to this project, every classification is paired with a feature-importance signal — supporting operator trust and post-incident forensic analysis, rather than treating the model as a black box.</p>
+        <span class="badge badge-illustrative">⬡ Explainability workflow — designed pipeline</span>
+        <p class="body-text" id="explainability-method"></p>
+        <div class="figure-card" style="margin-top:24px;">
+          <img src="assets/xai_feature_importance.png" alt="Feature importance ranking">
+          <figcaption>Top features driving classification decisions (real permutation-importance output)</figcaption>
+        </div>
+      </div>
+      <div id="xai-feature-list"></div>
+    </div>
+    <div class="section-inner" style="margin-top:56px;">
+      <div class="xai-flow">
+        <svg viewBox="0 0 1000 140" xmlns="http://www.w3.org/2000/svg"><g id="xai-flow-svg"></g></svg>
+      </div>
+  </section>
+
+  <!-- FINAL MODEL -->
+  <section class="section alt" id="final-model">
+    <div class="section-inner">
+      <p class="section-tag">09 — The Final Proposed Model</p>
+      <h2>Hybrid AE-Stacked Ensemble <span class="hl-signal">— Binary Attack Detection</span></h2>
+      <p class="body-text max-w">An autoencoder trained only on benign traffic contributes a reconstruction-error + latent-embedding anomaly signal. That signal, plus the original 32 packet features, feeds a 5-model stacking ensemble — <strong>Random Forest, XGBoost, LightGBM, Extra Trees, and an MLP</strong> — combined by a Logistic Regression meta-learner.</p>
+
+      <div class="pipeline-diagram">
+        <svg viewBox="0 0 1180 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;"><g id="architecture-svg"></g></svg>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card hero-metric"><span class="metric-value">94.3<small>%</small></span><span class="metric-label">Accuracy</span></div>
+        <div class="metric-card"><span class="metric-value">93.3<small>%</small></span><span class="metric-label">Macro F1-score</span></div>
+        <div class="metric-card"><span class="metric-value">98.3<small>%</small></span><span class="metric-label">AUC (ROC)</span></div>
+        <div class="metric-card"><span class="metric-value">94.8<small>%</small></span><span class="metric-label">Balanced accuracy</span></div>
+        <div class="metric-card small"><span class="metric-value">98.2<small>%</small> / 93.8<small>%</small></span><span class="metric-label">Attack precision / recall</span></div>
+        <div class="metric-card small"><span class="metric-value">86.0<small>%</small> / 95.8<small>%</small></span><span class="metric-label">Benign precision / recall</span></div>
+      </div>
+
+      <div class="figure-row">
+        <figure class="figure-card"><img src="assets/hybrid_binary_confusion_matrix.png" alt="Confusion matrix, final binary hybrid model"><figcaption>Confusion matrix — test set (5,939 packets)</figcaption></figure>
+        <figure class="figure-card"><img src="assets/hybrid_binary_vs_baseline_comparison.png" alt="Hybrid model vs Random Forest baseline"><figcaption>Proposed model vs. a quick Random Forest binary baseline</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTRIBUTIONS -->
+  <section class="section" id="contribution">
+    <div class="section-inner">
+      <p class="section-tag">10 — Research Contributions</p>
+      <h2>What this project actually adds.</h2>
+      <div class="contrib-grid" id="contrib-grid"></div>
+    </div>
+  </section>
+
+  <!-- LIMITATIONS + FUTURE WORK -->
+  <section class="section alt">
+    <div class="section-inner two-col">
+      <div class="limitations-card">
+        <h3>Limitations, stated plainly</h3>
+        <ul id="limitations-list">
+          <li>The 72–77% ceiling on the 3-class task is a data-level property, confirmed three independent ways — not something further tuning is expected to fix.</li>
+          <li>Federated learning was validated at 8 simulated clients, not the 100+ node target.</li>
+          <li>Post-quantum signing was designed but not executed — the native <code>liboqs</code> dependency was unavailable in the evaluation environment, and the system reports this rather than substituting a conventional signature.</li>
+          <li>Explainability used a permutation-importance fallback, not native SHAP; LIME was not implemented.</li>
+          <li>All results are from one dataset — cross-dataset generalization is untested.</li>
+        </ul>
+      </div>
+      <div class="future-card">
+        <h3>Future work</h3>
+        <ul id="future-list"></ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <span class="brand-mark">SEAQL</span>
+      <p style="color:var(--text-muted); font-size:0.88rem; margin-top:12px; max-width:340px;">Scalable, Explainable, and Adaptive Quantum-Resilient Federated Learning for Non-IID UAV Swarm Cybersecurity — a hierarchical federated learning and hybrid ensemble framework for UAV intrusion detection.</p>
+    </div>
+    <div>
+      <h4>Project</h4>
+      <ul>
+        <li><a href="#problem">Research Problem</a></li>
+        <li><a href="#results">Experimental Results</a></li>
+        <li><a href="#final-model">Final Model</a></li>
+        <li><a href="#contribution">Contributions</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="https://github.com/syedshah7214/seaql-uav" target="_blank" rel="noopener">GitHub Repository ↗</a></li>
+        <li><a href="documentation.html">Documentation</a></li>
+        <li><a href="readme.html">Project Overview</a></li>
+        <li><a href="license.html">MIT License</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copyright">SEAQL v1.0 · Developed by Syed Developers</span>
+    <span class="footer-copyright">© 2026 Syed Developers. All rights reserved.</span>
+  </div>
+</footer>
+
+<script src="assets/chart.umd.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

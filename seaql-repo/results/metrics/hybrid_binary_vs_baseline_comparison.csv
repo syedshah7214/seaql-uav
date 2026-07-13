@@ -1,0 +1,3 @@
+model,value
+"Random Forest (binary, quick baseline)",0.929
+"Hybrid AE-Stack (binary, this run)",0.9433620299048482

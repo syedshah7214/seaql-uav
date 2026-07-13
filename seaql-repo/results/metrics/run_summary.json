@@ -1,0 +1,28 @@
+{
+  "rows_used": 32558,
+  "features_after_cleaning": 32,
+  "classes": [
+    "DoS attack",
+    "Replay",
+    "benign"
+  ],
+  "best_central_model_by_validation": "Random Forest",
+  "best_central_test_macro_f1": 0.7344581707631823,
+  "hierarchical_fl_test_macro_f1": 0.5973355967776592,
+  "autoencoder_binary_f1": 0.8346456692913385,
+  "xai_method": "Permutation fallback (ModuleNotFoundError)",
+  "real_pqc_executed": false,
+  "anti_overfitting_controls": [
+    "strict train/validation/test isolation",
+    "leakage-like identifier removal",
+    "train-only imputation/scaling",
+    "class weighting",
+    "dropout",
+    "weight decay",
+    "gradient clipping",
+    "early stopping",
+    "bounded tree depth",
+    "minimum leaf size",
+    "replay buffer for continual learning"
+  ]
+}
