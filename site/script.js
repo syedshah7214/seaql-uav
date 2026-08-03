@@ -24,13 +24,19 @@ async function loadData() {
   buildContinualChart();
   buildFederatedMiniTables();
   buildExplainability();
+  buildInferenceDemo();
   buildXaiFlowSVG();
   buildArchitectureSVG();
+  buildConfidenceMeters();
+  animateGauges();
+  buildObjectivesBoard();
   buildContributions();
   buildFutureWork();
+  initModelComparisonToggle();
   animateStats();
   initScrollReveal();
   initActiveNav();
+  initResearchAssistant();
 }
 
 // ============ Hero: UAV swarm network canvas ============
@@ -351,26 +357,105 @@ function buildProgressionChart() {
   });
 }
 
-// ============ Results table ============
+// ============ Results table (interactive Model Comparison Panel) ============
 function fmt(v) { return v === null || v === undefined ? '<span class="na">—</span>' : v.toFixed(1) + '%'; }
+let currentCompareMetric = 'macroF1';
 function buildResultsTable() {
   const tbody = document.querySelector('#results-table tbody');
-  tbody.innerHTML = SEAQL_DATA.resultsTable.map(r => `
+  const rows = SEAQL_DATA.resultsTable.slice().sort((a, b) => {
+    const av = a[currentCompareMetric], bv = b[currentCompareMetric];
+    if (av === null || av === undefined) return 1;
+    if (bv === null || bv === undefined) return -1;
+    return bv - av;
+  });
+  tbody.innerHTML = rows.map(r => `
     <tr class="${r.model.includes('final') ? 'final-row' : ''}">
       <td class="model-name">${r.model}</td>
-      <td>${fmt(r.accuracy)}</td>
-      <td>${fmt(r.macroF1)}</td>
-      <td>${fmt(r.weightedF1)}</td>
-      <td>${fmt(r.auc)}</td>
+      <td class="${currentCompareMetric === 'accuracy' ? 'metric-col-active' : ''}">${fmt(r.accuracy)}</td>
+      <td class="${currentCompareMetric === 'macroF1' ? 'metric-col-active' : ''}">${fmt(r.macroF1)}</td>
+      <td class="${currentCompareMetric === 'weightedF1' ? 'metric-col-active' : ''}">${fmt(r.weightedF1)}</td>
+      <td class="${currentCompareMetric === 'auc' ? 'metric-col-active' : ''}">${fmt(r.auc)}</td>
     </tr>`).join('');
 }
 
-// ============ Baseline confusion matrix grid ============
+function initModelComparisonToggle() {
+  const controls = document.getElementById('model-compare-controls');
+  if (!controls) return;
+  controls.querySelectorAll('.compare-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      controls.querySelectorAll('.compare-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCompareMetric = btn.dataset.metric;
+      buildResultsTable();
+    });
+  });
+}
+
+// ============ AI Confidence Meters (radial gauges, static test-set metrics) ============
+function buildConfidenceMeters() {
+  const el = document.getElementById('confidence-meters');
+  if (!el || !SEAQL_DATA.finalModel) return;
+  const fm = SEAQL_DATA.finalModel;
+  const meters = [
+    { label: 'Accuracy', value: fm.accuracy },
+    { label: 'Macro F1', value: fm.macroF1 },
+    { label: 'AUC (ROC)', value: fm.auc },
+    { label: 'Balanced accuracy', value: fm.balancedAccuracy }
+  ];
+  el.innerHTML = meters.map(m => radialGauge(m.label, m.value)).join('');
+}
+
+function radialGauge(label, value) {
+  const r = 52, c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(100, value));
+  const offset = c - (pct / 100) * c;
+  const gaugeId = 'gauge-' + label.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  return `
+    <div class="gauge-card">
+      <svg viewBox="0 0 130 130" width="130" height="130" class="gauge-svg" role="img" aria-label="${label}: ${pct.toFixed(1)} percent">
+        <circle cx="65" cy="65" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="10"/>
+        <circle cx="65" cy="65" r="${r}" fill="none" stroke="var(--accent)" stroke-width="10"
+          stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}"
+          transform="rotate(-90 65 65)" class="gauge-arc" id="${gaugeId}" data-target="${offset}"/>
+        <text x="65" y="60" text-anchor="middle" class="gauge-value" font-family="var(--font-display)">${pct.toFixed(1)}%</text>
+        <text x="65" y="78" text-anchor="middle" class="gauge-sublabel" font-family="var(--font-mono)">test set</text>
+      </svg>
+      <span class="gauge-label">${label}</span>
+    </div>`;
+}
+
+function animateGauges() {
+  document.querySelectorAll('.gauge-arc').forEach(arc => {
+    const target = arc.getAttribute('data-target');
+    requestAnimationFrame(() => requestAnimationFrame(() => { arc.style.strokeDashoffset = target; }));
+  });
+}
+function buildObjectivesBoard() {
+  const el = document.getElementById('objectives-board');
+  if (!el || !SEAQL_DATA.objectives) return;
+  const statusMeta = {
+    achieved: { label: 'Achieved', cls: 'status-achieved', icon: '✓' },
+    partial: { label: 'Partial', cls: 'status-partial', icon: '◐' },
+    designed: { label: 'Designed only', cls: 'status-designed', icon: '○' }
+  };
+  el.innerHTML = SEAQL_DATA.objectives.map(o => {
+    const meta = statusMeta[o.status] || statusMeta.designed;
+    return `
+    <div class="objective-card">
+      <div class="objective-head">
+        <span class="objective-id">O${o.id}</span>
+        <span class="status-pill ${meta.cls}"><span class="status-dot"></span>${meta.icon} ${meta.label}</span>
+      </div>
+      <p class="objective-text">${o.text}</p>
+      <p class="objective-note">${o.note}</p>
+    </div>`;
+  }).join('');
+}
 function buildBaselineConfusionGrid() {
   const el = document.getElementById('baseline-confusion-grid');
   el.innerHTML = SEAQL_DATA.baselineConfusion.map(b => `
     <div class="figure-card">
-      <img src="assets/${b.img}" alt="Confusion matrix for ${b.model}">
+      <img src="assets/${b.img}" alt="Confusion matrix for ${b.model}" loading="lazy" decoding="async">
       <div class="fig-title">${b.model}</div>
       <figcaption>${b.note}</figcaption>
     </div>`).join('');
@@ -493,6 +578,16 @@ function buildRoadmap() {
 }
 
 // ============ Final model architecture diagram ============
+const ARCH_STAGE_DETAILS = {
+  'Dataset': 'Raw capture: 54,783 packet rows. After removing rows with missing/invalid class labels (21,681 dropped), 32,558 labeled rows remain across 32 features, split benign / DoS attack / Replay.',
+  'Preprocessing': 'Identifier/leakage columns (timestamp, frame number) and fully-empty or constant columns are dropped, duplicates removed, then median imputation + robust scaling — fitted only on the training split to avoid leakage.',
+  'Federated Learning': 'Simulated across 8 clients in 2 clusters over 5 rounds, partitioned with Dirichlet(α = 0.30) for a deliberately severe non-IID split — stress-testing the model on realistically uneven swarm data.',
+  'Autoencoder': 'Trained only on benign traffic, so it never "sees" attacks during training. Its reconstruction error and latent embedding become an anomaly signal that is fed forward as extra features.',
+  'Random Forest\n(+4 more)': 'Five base learners — Random Forest, XGBoost, LightGBM, Extra Trees, and an MLP — each trained on the original 32 features plus the autoencoder\'s anomaly signal.',
+  'Stacked Ensemble': 'A Logistic Regression meta-learner combines the five base learners\' outputs, correcting for cases where individual models disagree or overfit to one attack pattern.',
+  'Final Detection': 'The combined system reaches 94.3% accuracy, 93.3% macro F1, and 98.3% AUC on binary (benign vs. attack) detection — the number reported throughout this site.',
+};
+
 function buildArchitectureSVG() {
   const stages = SEAQL_DATA.architecture;
   const g = document.getElementById('architecture-svg');
@@ -502,10 +597,12 @@ function buildArchitectureSVG() {
     const x = startX + i * (boxW + gap);
     const isLast = i === stages.length - 1;
     const lines = s.split('\n');
-    svg += `<rect x="${x}" y="${y}" width="${boxW}" height="${boxH}" rx="9" fill="${isLast ? 'rgba(108,140,255,0.1)' : '#0A0D14'}" stroke="${isLast ? '#6C8CFF' : '#232A3A'}" stroke-width="${isLast ? 2 : 1}" ${isLast ? 'class="pulse-glow"' : ''}/>`;
+    svg += `<g class="arch-stage" data-stage="${i}" tabindex="0" role="button" aria-expanded="false" aria-label="${s.replace(/\n/g,' ')} — show details">
+      <rect x="${x}" y="${y}" width="${boxW}" height="${boxH}" rx="9" fill="${isLast ? 'rgba(108,140,255,0.1)' : '#0A0D14'}" stroke="${isLast ? '#6C8CFF' : '#232A3A'}" stroke-width="${isLast ? 2 : 1}" class="arch-stage-rect ${isLast ? 'pulse-glow' : ''}"/>`;
     lines.forEach((line, li) => {
-      svg += `<text x="${x + boxW/2}" y="${y + boxH/2 - (lines.length-1)*8 + li*15 + 4}" text-anchor="middle" font-size="11.5" font-family="IBM Plex Sans" font-weight="${isLast?600:400}" fill="${isLast ? '#6C8CFF' : '#E9ECF4'}">${line}</text>`;
+      svg += `<text x="${x + boxW/2}" y="${y + boxH/2 - (lines.length-1)*8 + li*15 + 4}" text-anchor="middle" font-size="11.5" font-family="IBM Plex Sans" font-weight="${isLast?600:400}" fill="${isLast ? '#6C8CFF' : '#E9ECF4'}" class="arch-stage-text">${line}</text>`;
     });
+    svg += `</g>`;
     if (!isLast) {
       const x2 = x + boxW;
       svg += `<line x1="${x2}" y1="${y + boxH/2}" x2="${x2 + gap}" y2="${y + boxH/2}" stroke="#6C8CFF" stroke-width="1.5" marker-end="url(#arrow4)"/>`;
@@ -518,6 +615,23 @@ function buildArchitectureSVG() {
     svgEl.setAttribute('viewBox', `0 0 ${totalW} 150`);
     svgEl.style.minWidth = totalW + 'px';
   }
+
+  const detailEl = document.getElementById('architecture-detail');
+  const groups = g.querySelectorAll('.arch-stage');
+  function activate(i) {
+    groups.forEach(gr => gr.classList.remove('active'));
+    groups[i].classList.add('active');
+    groups.forEach(gr => gr.setAttribute('aria-expanded', 'false'));
+    groups[i].setAttribute('aria-expanded', 'true');
+    if (detailEl) {
+      detailEl.innerHTML = `<strong>${stages[i].replace(/\n/g, ' ')}</strong> — ${ARCH_STAGE_DETAILS[stages[i]] || ''}`;
+      detailEl.hidden = false;
+    }
+  }
+  groups.forEach((gr, i) => {
+    gr.addEventListener('click', () => activate(i));
+    gr.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(i); } });
+  });
 }
 
 // ============ Mini tables under supplementary FL charts ============
@@ -557,18 +671,189 @@ function initActiveNav() {
 function buildExplainability() {
   document.getElementById('explainability-method').textContent = SEAQL_DATA.explainability.method;
   const el = document.getElementById('xai-feature-list');
-  const max = Math.max(...SEAQL_DATA.explainability.topFeatures.map(f => f.importance));
-  el.innerHTML = `<div class="chart-card"><h3>Top features by importance</h3>` +
-    SEAQL_DATA.explainability.topFeatures.map(f => `
-      <div style="margin-bottom:14px;">
-        <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">
-          <span>${f.feature}</span><span>${f.importance.toFixed(1)}%</span>
+  el.classList.add('xai-explorer');
+  const features = SEAQL_DATA.explainability.topFeatures.slice();
+  const max = Math.max(...features.map(f => f.importance));
+
+  el.innerHTML = `
+    <div class="chart-card">
+      <div class="xai-explorer-head">
+        <h3>Explainability Explorer</h3>
+        <div class="xai-explorer-controls">
+          <input type="text" id="xai-search" class="xai-search-input" placeholder="Search a feature (e.g. wlan.seq)…" aria-label="Search features">
+          <div class="xai-sort-toggle" role="group" aria-label="Sort order">
+            <button type="button" class="xai-sort-btn active" data-sort="desc">High → Low</button>
+            <button type="button" class="xai-sort-btn" data-sort="asc">Low → High</button>
+            <button type="button" class="xai-sort-btn" data-sort="alpha">A → Z</button>
+          </div>
         </div>
-        <div style="height:6px; background:var(--surface-2); border-radius:3px; overflow:hidden;">
-          <div style="height:100%; width:${(f.importance/max)*100}%; background:var(--accent); border-radius:3px;"></div>
+      </div>
+      <div id="xai-feature-rows"></div>
+      <p id="xai-empty-state" class="xai-empty" hidden>No feature matches that search.</p>
+    </div>`;
+
+  const rowsEl = document.getElementById('xai-feature-rows');
+  const searchEl = document.getElementById('xai-search');
+  const emptyEl = document.getElementById('xai-empty-state');
+  const sortBtns = el.querySelectorAll('.xai-sort-btn');
+  let sortMode = 'desc';
+
+  function render() {
+    const q = searchEl.value.trim().toLowerCase();
+    let list = features.filter(f => f.feature.toLowerCase().includes(q));
+    if (sortMode === 'desc') list.sort((a, b) => b.importance - a.importance);
+    else if (sortMode === 'asc') list.sort((a, b) => a.importance - b.importance);
+    else list.sort((a, b) => a.feature.localeCompare(b.feature));
+
+    emptyEl.hidden = list.length !== 0;
+    rowsEl.innerHTML = list.map((f, i) => `
+      <button type="button" class="xai-feature-row" data-feature="${f.feature}" aria-expanded="false">
+        <div class="xai-feature-row-top">
+          <span class="xai-feature-rank">#${features.findIndex(x => x.feature === f.feature) + 1}</span>
+          <span class="xai-feature-name">${f.feature}</span>
+          <span class="xai-feature-pct">${f.importance.toFixed(1)}%</span>
         </div>
-      </div>`).join('') + `</div>`;
+        <div class="xai-feature-bar-track"><div class="xai-feature-bar-fill" style="width:${(f.importance / max) * 100}%;"></div></div>
+        <div class="xai-feature-detail">${xaiFeatureNote(f.feature)}</div>
+      </button>`).join('');
+
+    rowsEl.querySelectorAll('.xai-feature-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const isOpen = row.classList.toggle('open');
+        row.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    });
+  }
+
+  searchEl.addEventListener('input', render);
+  sortBtns.forEach(btn => btn.addEventListener('click', () => {
+    sortBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    sortMode = btn.dataset.sort;
+    render();
+  }));
+
+  render();
 }
+
+function xaiFeatureNote(feature) {
+  const notes = {
+    'wlan.seq': 'Sequence-number irregularities are a hallmark of retransmitted or replayed 802.11 frames.',
+    'wlan.duration': 'Anomalous duration/NAV values can indicate malformed or maliciously crafted frames.',
+    'time_since_last_packet': 'Inter-arrival timing deviations are one of the few signals available for distinguishing replay-style traffic.',
+    'wlan.fc.type': 'Frame-type distribution shifts flag unusual control/management traffic mixes.',
+    'ip.dst': 'Destination-address concentration can indicate a flood or targeted DoS pattern.',
+    'ip.id': 'IP identification-field irregularities can indicate spoofed or replayed packets.',
+    'wlan.fc.subtype': 'Frame-subtype shifts help separate normal association/data traffic from attack traffic.'
+  };
+  return notes[feature] || 'Contributes to the permutation-importance ranking for this classification.';
+}
+
+// ============ Interactive classifier demo ============
+// Not a live model call. It's a transparent weighted-sum reasoning
+// tool built directly from the same permutation-importance percentages
+// reported in the Explainability section — so a visitor can *feel*
+// how the real reported weights combine, without us pretending the
+// browser is running the actual trained ensemble.
+const DEMO_PRESETS = {
+  benign:  { 'wlan.seq': 8,  'wlan.duration': 10, 'time_since_last_packet': 12, 'wlan.fc.type': 6,  'ip.dst': 10, 'ip.id': 8,  'wlan.fc.subtype': 6 },
+  dos:     { 'wlan.seq': 30, 'wlan.duration': 70, 'time_since_last_packet': 45, 'wlan.fc.type': 85, 'ip.dst': 90, 'ip.id': 40, 'wlan.fc.subtype': 55 },
+  replay:  { 'wlan.seq': 92, 'wlan.duration': 55, 'time_since_last_packet': 85, 'wlan.fc.type': 35, 'ip.dst': 25, 'ip.id': 80, 'wlan.fc.subtype': 60 },
+};
+
+function buildInferenceDemo() {
+  const panel = document.getElementById('demo-panel');
+  if (!panel || !SEAQL_DATA) return;
+  const features = SEAQL_DATA.explainability.topFeatures.slice().sort((a, b) => b.importance - a.importance);
+  const totalWeight = features.reduce((s, f) => s + f.importance, 0);
+  const state = {};
+  features.forEach(f => { state[f.feature] = DEMO_PRESETS.benign[f.feature] ?? 20; });
+
+  panel.innerHTML = `
+    <div class="demo-sliders">
+      <div class="demo-presets">
+        <button type="button" class="demo-preset-btn" data-preset="benign">Typical benign</button>
+        <button type="button" class="demo-preset-btn" data-preset="dos">DoS-like burst</button>
+        <button type="button" class="demo-preset-btn" data-preset="replay">Replay-like pattern</button>
+      </div>
+      ${features.map(f => `
+        <div class="demo-slider-row">
+          <div class="demo-slider-label">
+            <span class="demo-slider-name">${f.feature}</span>
+            <span class="demo-slider-weight">weight ${f.importance.toFixed(1)}%</span>
+            <span class="demo-slider-value" id="demo-val-${cssSafe(f.feature)}">${state[f.feature]}</span>
+          </div>
+          <input type="range" min="0" max="100" step="1" value="${state[f.feature]}"
+                 id="demo-slider-${cssSafe(f.feature)}" data-feature="${f.feature}"
+                 aria-label="${f.feature} anomaly level">
+        </div>`).join('')}
+    </div>
+    <div class="demo-result">
+      <div class="demo-verdict" id="demo-verdict">—</div>
+      <div class="demo-score-track"><div class="demo-score-fill" id="demo-score-fill"></div></div>
+      <div class="demo-score-label" id="demo-score-label">Weighted anomaly score</div>
+      <div class="demo-drivers">
+        <h4>What's driving this reading</h4>
+        <div id="demo-drivers-list"></div>
+      </div>
+    </div>`;
+
+  function cssSafeLocal(s) { return s.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+  function recompute() {
+    let weighted = 0;
+    const contributions = features.map(f => {
+      const v = state[f.feature];
+      const contribution = f.importance * v;
+      weighted += contribution;
+      return { feature: f.feature, contribution, value: v };
+    });
+    const score = totalWeight > 0 ? weighted / totalWeight : 0;
+
+    const verdictEl = document.getElementById('demo-verdict');
+    const fillEl = document.getElementById('demo-score-fill');
+    const labelEl = document.getElementById('demo-score-label');
+    const isAttack = score >= 50;
+    verdictEl.textContent = isAttack ? 'Flagged: Attack-like' : 'Reads as: Benign-like';
+    verdictEl.className = 'demo-verdict ' + (isAttack ? 'is-attack' : 'is-benign');
+    fillEl.style.width = Math.min(100, Math.max(0, score)) + '%';
+    fillEl.style.background = isAttack ? 'var(--danger)' : 'var(--success)';
+    labelEl.textContent = `Weighted anomaly score: ${score.toFixed(1)} / 100`;
+
+    const top = contributions.slice().sort((a, b) => b.contribution - a.contribution).slice(0, 3);
+    document.getElementById('demo-drivers-list').innerHTML = top.map(c => `
+      <div class="demo-driver-row"><span>${c.feature}</span><span>${c.value}/100</span></div>`).join('');
+  }
+
+  features.forEach(f => {
+    const id = 'demo-slider-' + cssSafeLocal(f.feature);
+    const slider = document.getElementById(id);
+    const valEl = document.getElementById('demo-val-' + cssSafeLocal(f.feature));
+    slider.addEventListener('input', () => {
+      state[f.feature] = Number(slider.value);
+      valEl.textContent = slider.value;
+      recompute();
+    });
+  });
+
+  panel.querySelectorAll('.demo-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = DEMO_PRESETS[btn.dataset.preset];
+      features.forEach(f => {
+        state[f.feature] = preset[f.feature] ?? state[f.feature];
+        const slider = document.getElementById('demo-slider-' + cssSafeLocal(f.feature));
+        const valEl = document.getElementById('demo-val-' + cssSafeLocal(f.feature));
+        slider.value = state[f.feature];
+        valEl.textContent = state[f.feature];
+      });
+      recompute();
+    });
+  });
+
+  recompute();
+}
+
+function cssSafe(s) { return s.replace(/[^a-zA-Z0-9]/g, '_'); }
 
 // ============ Contributions ============
 const CONTRIB_ICONS = [
@@ -617,7 +902,8 @@ function initMobileMenu() {
 function initScrollReveal() {
   const selectors = ['.chart-card', '.finding-card', '.metrics-grid', '.figure-row', '.figure-grid',
     '.contrib-grid', '.limitations-card', '.future-card', '.problem-list', '.timeline', '.problem-item',
-    '.why-grid', '.results-table-wrap', '.dataset-grid', '.dataset-flow', '.pipeline-diagram', '.chart-grid-2', '.xai-flow', '.roadmap-grid'];
+    '.why-grid', '.results-table-wrap', '.dataset-grid', '.dataset-flow', '.pipeline-diagram', '.chart-grid-2', '.xai-flow', '.roadmap-grid',
+    '.objectives-board', '.confidence-meters', '.xai-explorer'];
   const els = document.querySelectorAll(selectors.join(','));
   els.forEach(el => el.classList.add('reveal'));
   const io = new IntersectionObserver((entries) => {
@@ -634,6 +920,97 @@ document.addEventListener('DOMContentLoaded', () => {
   initCursorDrone();
   loadData();
 });
+
+// ============ Research assistant (client-side FAQ, no external API) ============
+// Deliberately not wired to any LLM: a keyword-scored match against a
+// small, honestly-sourced FAQ built straight from data.json, so nothing
+// here can drift from — or overstate — what's actually reported on this site.
+function buildResearchKB() {
+  const fm = SEAQL_DATA.finalModel;
+  const ds = SEAQL_DATA.dataset;
+  const fl = SEAQL_DATA.federatedLearning;
+  const xai = SEAQL_DATA.explainability;
+  const fw = SEAQL_DATA.futureWork;
+  return [
+    {
+      q: 'What is the final model accuracy?',
+      keywords: ['accuracy', 'result', 'performance', 'how good', 'score', 'f1', 'auc'],
+      a: `The final model — ${fm.name} — reaches <strong>${fm.accuracy}% accuracy</strong>, ${fm.macroF1}% macro F1, and ${fm.auc}% AUC on binary (benign vs. attack) detection. Attack precision is ${fm.attackPrecision}% and recall ${fm.attackRecall}%.`
+    },
+    {
+      q: 'What dataset was used?',
+      keywords: ['dataset', 'data', 'rows', 'packets', 'features', 'samples'],
+      a: `Starting from ${ds.rawRows.toLocaleString()} raw captured rows, ${ds.discardedRows.toLocaleString()} were dropped for missing/invalid labels, leaving ${ds.finalRows.toLocaleString()} labeled rows across ${ds.features} features, split across benign, DoS attack, and Replay traffic.`
+    },
+    {
+      q: 'How was federated learning set up?',
+      keywords: ['federated', 'fl', 'clients', 'clusters', 'non-iid', 'rounds'],
+      a: `Simulated across <strong>${fl.clients} clients</strong> in ${fl.clusters} clusters over ${fl.rounds} rounds, using a ${fl.partitioning} — a deliberately hard non-IID split rather than an easy uniform one.`
+    },
+    {
+      q: 'How is the model explained (XAI)?',
+      keywords: ['explainable', 'xai', 'shap', 'interpretability', 'why', 'explain'],
+      a: `${xai.method} The top contributing feature is <strong>${xai.topFeatures[0].feature}</strong> at ${xai.topFeatures[0].importance.toFixed(1)}% importance.`
+    },
+    {
+      q: 'What are the known limitations / future work?',
+      keywords: ['limitation', 'weakness', 'future', 'gap', 'problem', 'not done', 'pending'],
+      a: `Honestly documented next steps: <ul style="margin:8px 0 0 18px;">${fw.map(f => `<li style="margin-bottom:6px;">${f}</li>`).join('')}</ul>`
+    },
+    {
+      q: 'Who built this?',
+      keywords: ['who', 'author', 'team', 'developer', 'made this', 'built'],
+      a: `Built as a Final Year Project applying federated learning, explainable AI, and post-quantum-aware design to UAV swarm cybersecurity. Full authorship and supervision details are in the thesis document.`
+    },
+  ];
+}
+
+function scoreMatch(query, entry) {
+  const q = query.toLowerCase();
+  let score = 0;
+  entry.keywords.forEach(k => { if (q.includes(k)) score += k.length; });
+  if (q.includes(entry.q.toLowerCase().slice(0, 6))) score += 3;
+  return score;
+}
+
+function initResearchAssistant() {
+  const toggle = document.getElementById('ra-toggle');
+  const panel = document.getElementById('ra-panel');
+  const closeBtn = document.getElementById('ra-close');
+  const chipsEl = document.getElementById('ra-chips');
+  const answerEl = document.getElementById('ra-answer');
+  const input = document.getElementById('ra-input');
+  const askBtn = document.getElementById('ra-ask');
+  if (!toggle || !panel || !SEAQL_DATA) return;
+
+  const kb = buildResearchKB();
+  chipsEl.innerHTML = kb.slice(0, 4).map((e, i) => `<button type="button" class="ra-chip" data-i="${i}">${e.q}</button>`).join('');
+  answerEl.innerHTML = `<p class="ra-empty">Ask a question, or tap a suggestion above.</p>`;
+
+  function answer(query) {
+    if (!query.trim()) return;
+    const scored = kb.map(e => ({ e, s: scoreMatch(query, e) })).sort((a, b) => b.s - a.s);
+    const best = scored[0];
+    if (!best || best.s === 0) {
+      answerEl.innerHTML = `<span class="ra-q">${query}</span><p class="ra-empty">No close match in the FAQ yet — try one of the suggestions above, or check the relevant section on the page.</p>`;
+      return;
+    }
+    answerEl.innerHTML = `<span class="ra-q">${query}</span><p>${best.e.a}</p>`;
+  }
+
+  toggle.addEventListener('click', () => {
+    const isOpen = panel.hidden;
+    panel.hidden = !isOpen;
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    if (isOpen) input.focus();
+  });
+  closeBtn.addEventListener('click', () => { panel.hidden = true; toggle.setAttribute('aria-expanded', 'false'); });
+  askBtn.addEventListener('click', () => answer(input.value));
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') answer(input.value); });
+  chipsEl.querySelectorAll('.ra-chip').forEach(chip => {
+    chip.addEventListener('click', () => { input.value = kb[chip.dataset.i].q; answer(input.value); });
+  });
+}
 
 // ============ Mini drone that smoothly follows the mouse cursor ============
 function initCursorDrone() {

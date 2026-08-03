@@ -21,10 +21,10 @@
   ],
 
   "baselineConfusion": [
-    { "model": "Logistic Regression", "img": "confusion_logistic_regression.png", "note": "Strong recall bias toward benign; almost fails to separate Replay from DoS." },
-    { "model": "MLP (early stopping)", "img": "confusion_mlp_early_stopping.png", "note": "Improves on the linear baseline but Replay recall stays low (20.9%)." },
-    { "model": "Random Forest", "img": "confusion_random_forest.png", "note": "Best central baseline; the DoS/Replay boundary is already visibly the weak point." },
-    { "model": "Hierarchical Federated MLP", "img": "confusion_hierarchical_fl.png", "note": "Privacy-preserving but a lower ceiling than central RF at this client scale." }
+    { "model": "Logistic Regression", "img": "confusion_logistic_regression.webp", "note": "Strong recall bias toward benign; almost fails to separate Replay from DoS." },
+    { "model": "MLP (early stopping)", "img": "confusion_mlp_early_stopping.webp", "note": "Improves on the linear baseline but Replay recall stays low (20.9%)." },
+    { "model": "Random Forest", "img": "confusion_random_forest.webp", "note": "Best central baseline; the DoS/Replay boundary is already visibly the weak point." },
+    { "model": "Hierarchical Federated MLP", "img": "confusion_hierarchical_fl.webp", "note": "Privacy-preserving but a lower ceiling than central RF at this client scale." }
   ],
 
   "finalModel": {
