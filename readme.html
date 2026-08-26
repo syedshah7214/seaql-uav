@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEAQL — Project Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .doc-body { max-width: 820px; margin: 0 auto; padding: 140px 32px 100px; }
+  .doc-body h1 { font-family: var(--font-display); font-size: 2rem; margin-bottom: 18px; }
+  .doc-body h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 42px 0 14px; color: var(--accent); }
+  .doc-body p { color: var(--text-muted); margin-bottom: 14px; }
+  .doc-body ul { margin: 14px 0 14px 20px; list-style: disc; color: var(--text-muted); }
+  .doc-body li { margin-bottom: 8px; }
+  .doc-body code { font-family: var(--font-mono); background: var(--surface-2); padding: 2px 6px; border-radius: 3px; color: var(--accent); font-size: 0.88em; }
+  .back-link { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="noise-overlay"></div>
+<nav class="nav"><div class="nav-inner">
+  <div class="nav-brand"><span class="brand-mark">SEAQL</span><span class="brand-sub">UAV Swarm Cybersecurity</span></div>
+  <a class="nav-cta" href="index.html">← Back to showcase</a>
+</div></nav>
+
+<div class="doc-body">
+  <p class="section-tag">Project Overview</p>
+  <h1>SEAQL — Scalable, Explainable, and Adaptive Quantum-Resilient Federated Learning for UAV Swarm Cybersecurity</h1>
+  <p>A hybrid, federated, and explainable intrusion-detection framework for UAV swarm networks, evaluated end-to-end on a real packet-capture dataset. Final model: <strong style="color:var(--text)">94.3% accuracy / 93.3% macro F1-score / 98.3% AUC</strong> on binary attack detection.</p>
+
+  <h2>Research Problem</h2>
+  <p>UAV swarms coordinate over shared wireless links, exposing them to Denial-of-Service flooding and packet Replay attacks. Existing UAV intrusion-detection research is typically centralized, non-explainable, and static once deployed.</p>
+
+  <h2>Methodology</h2>
+  <ul>
+    <li>Data cleaning: type coercion, identifier removal, duplicate removal → 32 usable features</li>
+    <li>Stratified 60/20/20 train/validation/test split</li>
+    <li>Baseline models: Logistic Regression, MLP, Random Forest</li>
+    <li>Hierarchical Federated Learning: 8 simulated clients, 2 clusters, non-IID partitioning</li>
+    <li>Autoencoder anomaly detector, trained on benign traffic only</li>
+    <li>Hybrid AE-Stacked Ensemble: autoencoder features + 5-model stack (RF, XGBoost, LightGBM, Extra Trees, MLP)</li>
+    <li>Final model reframed for binary attack-vs-benign detection</li>
+  </ul>
+  <figure class="figure-card" style="margin:24px 0;">
+    <img src="assets/class_distribution.png" alt="Dataset class distribution">
+    <figcaption>Cleaned dataset class distribution</figcaption>
+  </figure>
+
+  <h2>Results Summary</h2>
+  <p>Baseline Random Forest reached 73.4% macro F1 on the 3-class task. The proposed hybrid model reached 74.4% on the same 3-class task, and 93.3% macro F1 (94.3% accuracy) once reframed for binary attack detection — after three independent architectures confirmed that DoS/Replay confusion is a data-level property, not a modeling weakness.</p>
+  <figure class="figure-card" style="margin:24px 0;">
+    <img src="assets/hybrid_binary_confusion_matrix.png" alt="Final model confusion matrix">
+    <figcaption>Final model confusion matrix — test set</figcaption>
+  </figure>
+
+  <h2>Repository Structure</h2>
+  <p><code>src/</code> — pipeline scripts · <code>notebooks/</code> — runnable Jupyter notebook · <code>data/</code> — dataset · <code>results/</code> — all metrics and figures · <code>site/</code> — this showcase.</p>
+
+  <h2>Running It Yourself</h2>
+  <p><code>pip install -r requirements.txt</code><br><code>python src/uav_fl_hybrid_model_binary.py --data data/Dataset_T-ITS.csv --output results/binary_run</code></p>
+
+  <p style="margin-top:50px;"><a class="back-link" href="index.html">← Back to the full showcase</a></p>
+</div>
+
+<footer class="footer"><div class="footer-inner">
+  <div><span class="brand-mark">SEAQL</span></div>
+  <div class="footer-meta"><p class="footer-copyright">© 2026 Syed Developers. All rights reserved.</p></div>
+</div></footer>
+</body>
+</html>

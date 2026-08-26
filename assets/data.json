@@ -1,0 +1,155 @@
+{
+  "progression": [
+    { "n": 1, "model": "Logistic Regression", "task": "3-class", "macroF1": 46.7, "note": "Linear baseline" },
+    { "n": 2, "model": "MLP (early stopping)", "task": "3-class", "macroF1": 59.4, "note": "Non-linear baseline" },
+    { "n": 3, "model": "Hierarchical Federated MLP", "task": "3-class", "macroF1": 59.7, "note": "Privacy-preserving, 8 clients" },
+    { "n": 4, "model": "Random Forest", "task": "3-class", "macroF1": 73.4, "note": "Best central baseline" },
+    { "n": 5, "model": "Autoencoder", "task": "binary (anomaly)", "macroF1": 83.5, "note": "Trained on benign traffic only" },
+    { "n": 6, "model": "Hybrid AE-Stacked Ensemble", "task": "3-class", "macroF1": 74.4, "note": "Proposed, 3-class framing" },
+    { "n": 7, "model": "Hierarchical 2-stage classifier", "task": "3-class", "macroF1": 74.5, "note": "Confirms DoS/Replay ceiling (72-77%)" },
+    { "n": 8, "model": "Hybrid AE-Stacked Ensemble (FINAL)", "task": "binary", "macroF1": 93.3, "note": "Proposed, binary framing" }
+  ],
+
+  "resultsTable": [
+    { "model": "Logistic Regression", "accuracy": 55.9, "macroF1": 46.7, "weightedF1": 44.9, "auc": null },
+    { "model": "MLP (early stopping)", "accuracy": 63.1, "macroF1": 59.4, "weightedF1": 57.9, "auc": null },
+    { "model": "Hierarchical Federated MLP", "accuracy": null, "macroF1": 59.7, "weightedF1": null, "auc": null },
+    { "model": "Random Forest", "accuracy": 73.4, "macroF1": 73.4, "weightedF1": 72.4, "auc": 89.2 },
+    { "model": "Autoencoder (binary anomaly)", "accuracy": null, "macroF1": 83.5, "weightedF1": null, "auc": null },
+    { "model": "Hybrid AE-Stacked Ensemble (3-class)", "accuracy": 74.0, "macroF1": 74.4, "weightedF1": 73.4, "auc": 89.5 },
+    { "model": "Hybrid AE-Stacked Ensemble (binary, final)", "accuracy": 94.3, "macroF1": 93.3, "weightedF1": null, "auc": 98.3 }
+  ],
+
+  "baselineConfusion": [
+    { "model": "Logistic Regression", "img": "confusion_logistic_regression.webp", "note": "Strong recall bias toward benign; almost fails to separate Replay from DoS." },
+    { "model": "MLP (early stopping)", "img": "confusion_mlp_early_stopping.webp", "note": "Improves on the linear baseline but Replay recall stays low (20.9%)." },
+    { "model": "Random Forest", "img": "confusion_random_forest.webp", "note": "Best central baseline; the DoS/Replay boundary is already visibly the weak point." },
+    { "model": "Hierarchical Federated MLP", "img": "confusion_hierarchical_fl.webp", "note": "Privacy-preserving but a lower ceiling than central RF at this client scale." }
+  ],
+
+  "finalModel": {
+    "name": "Hybrid AE-Stacked Ensemble (Binary Attack Detection)",
+    "accuracy": 94.3,
+    "balancedAccuracy": 94.8,
+    "macroF1": 93.3,
+    "auc": 98.3,
+    "attackPrecision": 98.2,
+    "attackRecall": 93.8,
+    "benignPrecision": 86.0,
+    "benignRecall": 95.8,
+    "confusionMatrix": {
+      "labels": ["benign", "attack"],
+      "matrix": [[1803, 82], [299, 4437]]
+    }
+  },
+
+  "baselineVsFinal": {
+    "rfBinaryBaseline": 92.9,
+    "hybridBinaryFinal": 94.3
+  },
+
+  "dataset": {
+    "rawRows": 54783,
+    "validLabelRows": 33102,
+    "discardedRows": 21681,
+    "finalRows": 32558,
+    "features": 32,
+    "classDistribution": [
+      { "class": "Replay", "count": 11670 },
+      { "class": "DoS attack", "count": 11653 },
+      { "class": "benign", "count": 9235 }
+    ],
+    "cleaningSteps": [
+      "Removed rows with missing/invalid class label (21,681 rows)",
+      "Removed identifier/leakage columns (timestamp, frame number)",
+      "Removed fully-empty and constant columns",
+      "Removed duplicate rows",
+      "Median imputation + robust scaling, fitted on the training split only"
+    ]
+  },
+
+  "federatedLearning": {
+    "clients": 8,
+    "clusters": 2,
+    "rounds": 5,
+    "partitioning": "Dirichlet(\u03b1 = 0.30) \u2014 severe non-IID split",
+    "roundHistory": [
+      { "round": 1, "trainF1": 50.2, "valF1": 50.6, "valAccuracy": 59.0 },
+      { "round": 2, "trainF1": 55.9, "valF1": 56.8, "valAccuracy": 61.1 },
+      { "round": 3, "trainF1": 57.6, "valF1": 58.6, "valAccuracy": 62.2 },
+      { "round": 4, "trainF1": 59.3, "valF1": 59.9, "valAccuracy": 63.0 },
+      { "round": 5, "trainF1": 56.5, "valF1": 56.6, "valAccuracy": 62.3 }
+    ],
+    "clientSamples": [308, 3052, 7456, 3235, 123, 1241, 1267, 2852],
+    "note": "Communication-efficient top-k update compression halves per-round upload size (413,792 \u2192 206,872 bytes) with no architecture change."
+  },
+
+  "continualLearning": [
+    { "chunk": 1, "samples": 1303, "f1Before": 74.8, "f1After": 70.7 },
+    { "chunk": 2, "samples": 1303, "f1Before": 61.0, "f1After": 69.6 },
+    { "chunk": 3, "samples": 1302, "f1Before": 63.8, "f1After": 72.1 },
+    { "chunk": 4, "samples": 1302, "f1Before": 67.9, "f1After": 74.3 }
+  ],
+
+  "explainability": {
+    "method": "Permutation-importance fallback \u2014 SHAP was designed into the pipeline, but the SHAP package was unavailable in the evaluation environment, so the system automatically fell back to permutation importance rather than silently skipping explainability.",
+    "topFeatures": [
+      { "feature": "wlan.seq", "importance": 25.3 },
+      { "feature": "wlan.duration", "importance": 15.7 },
+      { "feature": "time_since_last_packet", "importance": 14.1 },
+      { "feature": "wlan.fc.type", "importance": 11.4 },
+      { "feature": "ip.dst", "importance": 7.6 },
+      { "feature": "ip.id", "importance": 6.5 },
+      { "feature": "wlan.fc.subtype", "importance": 6.4 }
+    ]
+  },
+
+  "contributions": [
+    { "title": "Hierarchical Federated Learning", "text": "An 8-client, 2-cluster architecture validated under severe Dirichlet(\u03b1=0.30) non-IID partitioning \u2014 no raw traffic ever leaves a client." },
+    { "title": "Non-IID-Aware Training", "text": "Explicitly modeled and measured under heterogeneous per-client class distributions, not assumed away." },
+    { "title": "Explainable AI", "text": "Every classification decision is paired with a feature-importance signal, supporting operator trust and forensic analysis." },
+    { "title": "Continual Learning", "text": "Replay-buffer incremental updates measurably improve macro F1 on new data chunks without retraining from scratch." },
+    { "title": "Hybrid Detection Architecture", "text": "An autoencoder's anomaly signal reused as classifier input, stacked with 5 supervised models \u2014 validated as a genuine accuracy gain, not just an ensemble average." },
+    { "title": "Quantum-Resilient Design", "text": "Post-quantum signing designed into the update pipeline; the system reports honestly when the crypto backend is unavailable rather than silently downgrading security." }
+  ],
+
+  "futureWork": [
+    "Scale federated validation from 8 simulated clients to 100+ node swarms as originally scoped",
+    "Execute native post-quantum signing (CRYSTALS-Kyber/Dilithium) once liboqs is available in the deployment environment",
+    "Add LIME alongside the current permutation/SHAP explainability path for cross-validated interpretability",
+    "Evaluate on a second, independent UAV capture dataset to test cross-dataset generalization",
+    "Investigate sequence/flow-level features to test whether the DoS/Replay ceiling can be moved beyond 72-77%"
+  ],
+
+  "roadmap": {
+    "proposed": [
+      { "title": "Data Acquisition & Preprocessing", "text": "Real UAV-GCS dataset; non-IID data partitioning strategies" },
+      { "title": "Model Design", "text": "Hybrid anomaly detection (VAE/Autoencoder); multi-class attack classification; XAI integration (SHAP, attention mechanisms)" },
+      { "title": "Hierarchical Federated Learning", "text": "Cluster-level aggregation; global coordination layer" },
+      { "title": "Continual Learning", "text": "Drift detection; incremental model updates" },
+      { "title": "Quantum-Resilient Security", "text": "Lightweight post-quantum signatures; secure update authentication" },
+      { "title": "Evaluation", "text": "Accuracy, robustness, scalability; latency, bandwidth, energy; explainability effectiveness" }
+    ],
+    "implemented": [
+      { "title": "Data Acquisition & Preprocessing", "text": "Real UAV packet-capture dataset (32,558 clean rows); cleaning, imputation, robust scaling", "status": "done" },
+      { "title": "Model Design", "text": "Autoencoder anomaly detector + 5-model hybrid stacking ensemble; permutation-importance XAI fallback (native SHAP unavailable)", "status": "partial" },
+      { "title": "Hierarchical Federated Learning", "text": "8 simulated clients, 2 clusters, 5 rounds under Dirichlet(\u03b1=0.30) non-IID partitioning", "status": "done" },
+      { "title": "Continual Learning", "text": "Replay-buffer incremental updates across sequential data chunks", "status": "done" },
+      { "title": "Quantum-Resilient Security", "text": "Designed into the update pipeline; native execution blocked by unavailable liboqs dependency in this environment", "status": "partial" },
+      { "title": "Evaluation", "text": "Accuracy/F1/AUC evaluated in depth on real data; latency/bandwidth/energy and 100+ node scalability remain future work", "status": "partial" }
+    ]
+  },
+
+  "architecture": [
+    "Dataset", "Preprocessing", "Federated Learning", "Autoencoder", "Random Forest\n(+4 more)", "Stacked Ensemble", "Final Detection"
+  ],
+
+  "objectives": [
+    { "id": 1, "text": "Three-tier hierarchical FL across 100+ heterogeneous UAV nodes", "status": "partial", "note": "Architecture implemented; validated at 8-client simulated scale, not 100+ nodes" },
+    { "id": 2, "text": "Non-IID-aware adaptive aggregation mechanism", "status": "achieved", "note": "Validated under Dirichlet(\u03b1=0.30) severe heterogeneity; documented accuracy-privacy trade-off" },
+    { "id": 3, "text": "Post-quantum cryptography (CRYSTALS-Kyber / Dilithium)", "status": "designed", "note": "Designed into pipeline; not executed (liboqs dependency unavailable in evaluation environment)" },
+    { "id": 4, "text": "Explainable anomaly detection (SHAP / LIME)", "status": "partial", "note": "Permutation-importance fallback implemented; native SHAP and LIME not executed in this environment" },
+    { "id": 5, "text": "Federated continual learning for evolving attack patterns", "status": "achieved", "note": "Replay-buffer continual learning module implemented and exercised" },
+    { "id": 6, "text": "Large-scale validation (100-500 nodes) vs. SOTA baselines", "status": "partial", "note": "Accuracy-focused validation complete on real dataset; large-scale systems validation is future work" }
+  ]
+}

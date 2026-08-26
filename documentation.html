@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEAQL — Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .doc-body { max-width: 820px; margin: 0 auto; padding: 140px 32px 100px; }
+  .doc-body h1 { font-family: var(--font-display); font-size: 2rem; margin-bottom: 18px; }
+  .doc-body h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 42px 0 14px; color: var(--accent); }
+  .doc-body p { color: var(--text-muted); margin-bottom: 14px; }
+  .doc-body pre { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin-bottom: 16px; }
+  .doc-body code { font-family: var(--font-mono); color: var(--accent); font-size: 0.86rem; }
+  .doc-body table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .doc-body th, .doc-body td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.86rem; }
+  .doc-body th { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; }
+  .back-link { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="noise-overlay"></div>
+<nav class="nav"><div class="nav-inner">
+  <div class="nav-brand"><span class="brand-mark">SEAQL</span><span class="brand-sub">UAV Swarm Cybersecurity</span></div>
+  <a class="nav-cta" href="index.html">← Back to showcase</a>
+</div></nav>
+
+<div class="doc-body">
+  <p class="section-tag">Documentation</p>
+  <h1>Technical Documentation</h1>
+  <p>How the pipeline is organized, how to reproduce every result on this site, and what each script does.</p>
+
+  <h2>Source files</h2>
+  <table>
+    <tr><th>File</th><th>Role</th></tr>
+    <tr><td><code>src/uav_fl_project.py</code></td><td>Full pipeline: cleaning, baselines, federated learning, autoencoder, continual learning, explainability</td></tr>
+    <tr><td><code>src/uav_fl_hybrid_model_v3.py</code></td><td>Hybrid AE-Stacked Ensemble, 3-class</td></tr>
+    <tr><td><code>src/uav_fl_hybrid_model_binary.py</code></td><td>Hybrid AE-Stacked Ensemble, binary — the final proposed model</td></tr>
+  </table>
+
+  <h2>Reproducing the results</h2>
+  <pre><code>pip install -r requirements.txt
+
+# Full pipeline: baselines + federated learning + autoencoder + continual learning + explainability
+python src/uav_fl_project.py --data data/Dataset_T-ITS.csv --output results/full_run
+
+# Final proposed model (binary hybrid)
+python src/uav_fl_hybrid_model_binary.py --data data/Dataset_T-ITS.csv --output results/binary_run</code></pre>
+  <p>Or open <code>notebooks/UAV_FL_Hybrid_Binary_Model.ipynb</code> and run all cells — no other setup required.</p>
+
+  <h2>Federated learning configuration</h2>
+  <table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Clients</td><td>8 simulated UAVs</td></tr>
+    <tr><td>Clusters</td><td>2</td></tr>
+    <tr><td>Rounds</td><td>5</td></tr>
+    <tr><td>Partitioning</td><td>Dirichlet(α = 0.30), severe non-IID</td></tr>
+  </table>
+  <figure class="figure-card" style="margin:24px 0;">
+    <img src="assets/federated_convergence.png" alt="Federated learning convergence curve">
+    <figcaption>Round-by-round validation macro F1</figcaption>
+  </figure>
+
+  <h2>Explainability method</h2>
+  <p>SHAP was designed into the pipeline; the SHAP package was unavailable in the evaluation environment, so the system automatically fell back to permutation importance rather than silently skipping explainability. This is reported honestly in <code>run_summary.json</code> as <code>"xai_method": "Permutation fallback (ModuleNotFoundError)"</code>.</p>
+  <figure class="figure-card" style="margin:24px 0;">
+    <img src="assets/xai_feature_importance.png" alt="Feature importance ranking">
+    <figcaption>Top features driving classification decisions</figcaption>
+  </figure>
+
+  <h2>Deployment</h2>
+  <p>This site is a static HTML/CSS/JS build (Chart.js loaded from CDN) — no build step. Deployed on Vercel with <code>site/</code> as the project root directory.</p>
+
+  <p style="margin-top:50px;"><a class="back-link" href="index.html">← Back to the full showcase</a></p>
+</div>
+
+<footer class="footer"><div class="footer-inner">
+  <div><span class="brand-mark">SEAQL</span></div>
+  <div class="footer-meta"><p class="footer-copyright">© 2026 Syed Developers. All rights reserved.</p></div>
+</div></footer>
+</body>
+</html>
