@@ -919,7 +919,40 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeroScrollShrink();
   initCursorDrone();
   loadData();
+  const pdfBtn = document.getElementById('export-pdf-btn');
+  if (pdfBtn) pdfBtn.addEventListener('click', () => window.print());
+  initNavDropdowns();
+  initScrollProgress();
 });
+
+function initScrollProgress() {
+  const bar = document.getElementById('scroll-progress');
+  if (!bar) return;
+  function update() {
+    const h = document.documentElement;
+    const scrolled = h.scrollTop;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (scrolled / max) * 100 : 0) + '%';
+  }
+  document.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+}
+
+function initNavDropdowns() {
+  const dropdowns = document.querySelectorAll('.nav-dropdown');
+  dropdowns.forEach(dd => {
+    const toggle = dd.querySelector('.nav-dropdown-toggle');
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = dd.classList.contains('open');
+      dropdowns.forEach(d => d.classList.remove('open'));
+      if (!wasOpen) dd.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => dropdowns.forEach(d => d.classList.remove('open')));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdowns.forEach(d => d.classList.remove('open')); });
+}
 
 // ============ Research assistant (client-side FAQ, no external API) ============
 // Deliberately not wired to any LLM: a keyword-scored match against a
@@ -1005,6 +1038,19 @@ function initResearchAssistant() {
     if (isOpen) input.focus();
   });
   closeBtn.addEventListener('click', () => { panel.hidden = true; toggle.setAttribute('aria-expanded', 'false'); });
+  document.addEventListener('click', (e) => {
+    if (!panel.hidden && !panel.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
+      panel.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) {
+      panel.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.focus();
+    }
+  });
   askBtn.addEventListener('click', () => answer(input.value));
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') answer(input.value); });
   chipsEl.querySelectorAll('.ra-chip').forEach(chip => {
