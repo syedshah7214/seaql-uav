@@ -1,0 +1,52 @@
+SEAQL v8 - premium visual design (Midnight Aurora) - test results, 2026-11-04
+==========================================================================
+Scope: visual refinement only. backend/ code and model files unchanged from v7.1
+(only docs/screenshots and CSS/JS colours + home hero visuals changed).
+
+1. Layout QA - all 11 pages x 4 sizes (1920x1080, 1366x768, 768x1024 tablet, 390x844 phone)
+   horizontal page overflow: none | browser console errors: none
+   (fixed during QA: Viva slide text/controls overflowing on phones - also present in v7)
+
+2. AI Detection Lab UI test: 14/14 PASS
+   PASS Hybrid AE-Stack is the default Detection Lab model
+   PASS model card shows the Hybrid model
+   PASS model comparison table rendered
+     hybrid / all held-out rows: {"Model":"Hybrid AE-Stack · binary","Total Samples":"6,621","Benign (Normal)":"2,101 (31.7%)","Attack (DoS / Replay)":"4,520 (68.3%)","Ground-truth labels":"6,621 valid · 0 empty","Accuracy (labelled rows)":"94.4%","Macro F1 (labelled rows)":"93.4%","ROC AUC":"98.4%","Attack precision / recall":"98.3% / 93.8%"}
+   PASS UI reproduces held-out 94.4% / 93.4% / 98.4% from raw CSV upload
+   PASS binary 2x2 confusion matrix rendered
+   PASS per-attack-type detection breakdown shown
+   PASS hybrid prediction CSV export
+   PASS hybrid: unlabelled CSV -> predictions only
+   PASS hybrid: missing/invalid labels handled separately
+   PASS invalid dataset -> friendly error, no stale results
+   PASS hybrid: full dataset (with empty labels) works + optimism note
+   PASS switching to Random Forest baseline
+   PASS RF baseline sample still 74.1% (3-class, 3x3 matrix)
+   PASS switching back restores last hybrid result
+   Invalid JSON responses: 0 | errors: none
+
+3. Regression (attack lab, CSV checks, viva, FL, topology, 3D fallback): 30/30 PASS
+   (the single 422 console message is the intended "malformed CSV rejected" test)
+
+4. Backend API (strict JSON, no NaN/Infinity):
+   === [hybrid] ALL 6,621 held-out rows (raw CSV): HTTP 200 in 0.6s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9441 macro_f1=0.9336 auc=0.9839  CM=[[1808, 77], [293, 4443]]
+   === [hybrid] hybrid held-out sample (2,000): HTTP 200 in 0.3s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9445 macro_f1=0.9349 auc=0.9834  CM=[[560, 18], [93, 1329]]
+   === [hybrid] FULL Dataset_T-ITS.csv (54,783 rows): HTTP 200 in 2.7s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9597 macro_f1=0.9519 auc=0.9937  CM=[[9230, 195], [1140, 22537]]
+   === [hybrid] unlabelled sample (300): HTTP 200 in 0.2s · strict JSON OK · NaN=0 Infinity=0
+   === [hybrid] dirty file (NaN / inf / bad labels): HTTP 200 in 0.2s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9453 macro_f1=0.9356 auc=0.9877  CM=[[107, 3], [18, 256]]
+   === [hybrid] invalid dataset: HTTP 422 in 0.0s · strict JSON OK · NaN=0 Infinity=0
+   === [hybrid] header only: HTTP 422 in 0.0s · strict JSON OK · NaN=0 Infinity=0
+   === [rf] RF baseline - labelled sample (2,000): HTTP 200 in 0.1s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.7410 macro_f1=0.7396 auc=0.8918  CM=[[557, 113, 52], [248, 369, 91], [1, 13, 556]]
+   === [rf] RF baseline - FULL Dataset_T-ITS.csv: HTTP 200 in 1.6s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.7868 macro_f1=0.7878 auc=0.9297  CM=[[9389, 1370, 912], [3352, 7379, 1275], [21, 129, 9275]]
+
+5. Saved Hybrid model verification (backend/verify_hybrid.py): matches_model_card = true
+   held-out accuracy 0.9441, macro F1 0.9336, ROC AUC 0.9839
+
+6. Performance (headless Chromium, software rendering, 1366x768):
+   Dashboard / Detection / FL / Research / Viva ~60 fps (same as v7); 3D Swarm same as v7.

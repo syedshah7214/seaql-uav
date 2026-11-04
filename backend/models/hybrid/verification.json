@@ -21,9 +21,5 @@
   },
   "auc_abs_difference_vs_model_card": 1.1201519820591699e-06,
   "matches_model_card": true,
-  "numpy_vs_torch": {
-    "max_relative_diff": 2.16877680259131e-07,
-    "median_relative_diff": 0.0,
-    "reconstruction_error_magnitude_max": 26575273721856.0
-  }
+  "numpy_vs_torch": "torch not installed - skipped"
 }

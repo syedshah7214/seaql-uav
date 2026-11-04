@@ -34,6 +34,16 @@ When `git push` asks for a password, use a GitHub **Personal Access Token** (Set
 
 ---
 
+### Replacing the existing repo `syedshah7214/seaql-uav` instead
+```powershell
+cd "C:\Users\Admin\Downloads\FYP PANGAY\seaql-uav-main"
+powershell -ExecutionPolicy Bypass -File .\deploy\replace_github_repo.ps1
+```
+This clones the repo next to the project, saves the old version on branch `backup-old-site`, replaces every file
+with v6, commits and pushes to `main` (no force-push, history kept). Vercel (`seaql-uav.vercel.app`) redeploys automatically.
+
+---
+
 ## Step 2 — Hugging Face Space (model server + full working dashboard)
 
 1. Create a free account at https://huggingface.co and a token with **Write** access:

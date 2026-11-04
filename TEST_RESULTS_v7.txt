@@ -1,0 +1,138 @@
+SEAQL v7 (V3 design + V6 backend) - test results (2026-11-04)
+
+## 1. Layout / navigation (Playwright: 1366x768, 1920x1080, 390x844)
+1366x768 landing="Security Command Center" viva:visible about:visible sidebarViva=#/viva headerViva=#/viva overflow=none errors=0
+1920x1080 landing="Security Command Center" viva:visible about:visible sidebarViva=#/viva headerViva=#/viva overflow=none errors=0
+390x844 landing="Security Command Center" viva:visible about:visible sidebarViva=#/viva headerViva=#/viva overflow=none errors=0
+
+## 2. AI Detection Lab in the V3 design - Hybrid + Random Forest (browser end-to-end)
+PASS Hybrid AE-Stack is the default Detection Lab model
+PASS model card shows the Hybrid model
+PASS model comparison table rendered
+  hybrid / all held-out rows: {"Model":"Hybrid AE-Stack · binary","Total Samples":"6,621","Benign (Normal)":"2,101 (31.7%)","Attack (DoS / Replay)":"4,520 (68.3%)","Ground-truth labels":"6,621 valid · 0 empty","Accuracy (labelled rows)":"94.4%","Macro F1 (labelled rows)":"93.4%","ROC AUC":"98.4%","Attack precision / recall":"98.3% / 93.8%"}
+PASS UI reproduces held-out 94.4% / 93.4% / 98.4% from raw CSV upload
+PASS binary 2x2 confusion matrix rendered
+PASS per-attack-type detection breakdown shown
+PASS hybrid prediction CSV export
+PASS hybrid: unlabelled CSV -> predictions only
+PASS hybrid: missing/invalid labels handled separately
+PASS invalid dataset -> friendly error, no stale results
+PASS hybrid: full dataset (with empty labels) works + optimism note
+PASS switching to Random Forest baseline
+PASS RF baseline sample still 74.1% (3-class, 3x3 matrix)
+PASS switching back restores last hybrid result
+Invalid JSON responses: 0 | errors: none
+
+## 3. Regression suite - all V3 modules (navigation, simulation, incidents, exports, viva, FL, topology)
+PASS pause stops simulation ticks
+PASS replay scenario compromises UAV-06
+PASS stop attack -> recovery restores nodes
+PASS speed slider sets 3x
+PASS reset clears incidents
+PASS nav dashboard
+PASS nav swarm
+PASS nav attack
+PASS nav detect
+PASS nav federated
+PASS nav xai
+PASS nav fleet
+PASS nav incidents
+PASS nav research
+PASS nav viva
+PASS nav about
+PASS alerts CSV export
+PASS incident drawer opens
+PASS incident report download
+PASS Esc closes drawer
+PASS alert search filter
+PASS malformed CSV rejected with clear error
+PASS non-CSV file rejected
+PASS unlabelled CSV predicts 300 rows
+PASS prediction export
+PASS viva next to slide 10
+PASS viva restart
+PASS FL next round
+PASS topology node opens UAV inspection
+errors: [
+  'Failed to load resource: the server responded with a status of 422 (Unprocessable Content)'
+]
+PASS 2D fallback when WebGL disabled
+(the only logged console error is the expected HTTP 422 for the deliberately invalid CSV test)
+
+## 4. API end-to-end, strict JSON parser (rejects NaN/Infinity)
+
+=== [hybrid] ALL 6,621 held-out rows (raw CSV): HTTP 200 in 0.6s · strict JSON OK · NaN=0 Infinity=0
+  model: Hybrid AE-Stacked Ensemble (binary attack detection) | classes: ['benign', 'attack'] | rows: 6621 | counts: {'benign': 2101, 'attack': 4520}
+  labels: {'valid': 6621, 'missing': 0, 'invalid': 0}
+  accuracy=0.9441 macro_f1=0.9336 auc=0.9839  CM=[[1808, 77], [293, 4443]]
+  by original type: {'benign': {'predicted_benign': 1808, 'predicted_attack': 77}, 'DoS attack': {'predicted_benign': 109, 'predicted_attack': 2225}, 'Replay': {'predicted_benign': 184, 'predicted_attack': 2218}}
+
+=== [hybrid] hybrid held-out sample (2,000): HTTP 200 in 0.3s · strict JSON OK · NaN=0 Infinity=0
+  model: Hybrid AE-Stacked Ensemble (binary attack detection) | classes: ['benign', 'attack'] | rows: 2000 | counts: {'benign': 653, 'attack': 1347}
+  labels: {'valid': 2000, 'missing': 0, 'invalid': 0}
+  accuracy=0.9445 macro_f1=0.9349 auc=0.9834  CM=[[560, 18], [93, 1329]]
+  by original type: {'benign': {'predicted_benign': 560, 'predicted_attack': 18}, 'DoS attack': {'predicted_benign': 38, 'predicted_attack': 668}, 'Replay': {'predicted_benign': 55, 'predicted_attack': 661}}
+
+=== [hybrid] FULL Dataset_T-ITS.csv (54,783 rows): HTTP 200 in 2.5s · strict JSON OK · NaN=0 Infinity=0
+  model: Hybrid AE-Stacked Ensemble (binary attack detection) | classes: ['benign', 'attack'] | rows: 54774 | counts: {'benign': 17480, 'attack': 37294}
+  labels: {'valid': 33102, 'missing': 21672, 'invalid': 0}
+  accuracy=0.9597 macro_f1=0.9519 auc=0.9937  CM=[[9230, 195], [1140, 22537]]
+  by original type: {'benign': {'predicted_benign': 9230, 'predicted_attack': 195}, 'DoS attack': {'predicted_benign': 453, 'predicted_attack': 11218}, 'Replay': {'predicted_benign': 687, 'predicted_attack': 11319}}
+
+=== [hybrid] unlabelled sample (300): HTTP 200 in 0.2s · strict JSON OK · NaN=0 Infinity=0
+  model: Hybrid AE-Stacked Ensemble (binary attack detection) | classes: ['benign', 'attack'] | rows: 300 | counts: {'benign': 100, 'attack': 200}
+  labels: None
+  no evaluation (no valid labels)
+
+=== [hybrid] dirty file (NaN / inf / bad labels): HTTP 200 in 0.2s · strict JSON OK · NaN=0 Infinity=0
+  model: Hybrid AE-Stacked Ensemble (binary attack detection) | classes: ['benign', 'attack'] | rows: 399 | counts: {'benign': 130, 'attack': 269}
+  labels: {'valid': 384, 'missing': 10, 'invalid': 5}
+  accuracy=0.9453 macro_f1=0.9356 auc=0.9877  CM=[[107, 3], [18, 256]]
+  by original type: {'benign': {'predicted_benign': 107, 'predicted_attack': 3}, 'DoS attack': {'predicted_benign': 8, 'predicted_attack': 129}, 'Replay': {'predicted_benign': 10, 'predicted_attack': 127}}
+
+=== [hybrid] invalid dataset: HTTP 422 in 0.0s · strict JSON OK · NaN=0 Infinity=0
+  error: This does not look like a UAV packet CSV: only 0 of the 32 required packet columns were found. Missing: frame.len, frame.protocols, wlan.duration, wlan.ra, wlan.ta, wlan.da, wlan.sa, wlan.seq, llc.type, ip.hdr_len ...
+
+=== [hybrid] header only: HTTP 422 in 0.0s · strict JSON OK · NaN=0 Infinity=0
+  error: The CSV has a header but no data rows.
+
+=== [rf] RF baseline - labelled sample (2,000): HTTP 200 in 0.1s · strict JSON OK · NaN=0 Infinity=0
+  model: Random Forest (3-class) - retrained locally with repo preprocessing | classes: ['DoS attack', 'Replay', 'benign'] | rows: 2000 | counts: {'DoS attack': 806, 'Replay': 495, 'benign': 699}
+  labels: {'valid': 2000, 'missing': 0, 'invalid': 0}
+  accuracy=0.7410 macro_f1=0.7396 auc=0.8918  CM=[[557, 113, 52], [248, 369, 91], [1, 13, 556]]
+
+=== [rf] RF baseline - FULL Dataset_T-ITS.csv: HTTP 200 in 1.5s · strict JSON OK · NaN=0 Infinity=0
+  model: Random Forest (3-class) - retrained locally with repo preprocessing | classes: ['DoS attack', 'Replay', 'benign'] | rows: 54774 | counts: {'DoS attack': 16039, 'Replay': 18859, 'benign': 19876}
+  labels: {'valid': 33102, 'missing': 21672, 'invalid': 0}
+  accuracy=0.7868 macro_f1=0.7878 auc=0.9297  CM=[[9389, 1370, 912], [3352, 7379, 1275], [21, 129, 9275]]
+
+## 5. Saved Hybrid model - independent reload + held-out re-evaluation (backend/verify_hybrid.py)
+{
+  "test_rows": 6621,
+  "accuracy": 0.9441172028394502,
+  "macro_f1": 0.9336005210110929,
+  "roc_auc": 0.9838861656749589,
+  "confusion_matrix": [
+    [
+      1808,
+      77
+    ],
+    [
+      293,
+      4443
+    ]
+  ],
+  "threshold_0.5_matches_stack_predict": true,
+  "model_card_metrics": {
+    "accuracy": 0.9441172028394502,
+    "macro_f1": 0.9336005210110929,
+    "auc": 0.983887285826941
+  },
+  "auc_abs_difference_vs_model_card": 1.1201519820591699e-06,
+  "matches_model_card": true,
+  "numpy_vs_torch": {
+    "max_relative_diff": 2.16877680259131e-07,
+    "median_relative_diff": 0.0,
+    "reconstruction_error_magnitude_max": 26575273721856.0
+  }
+}

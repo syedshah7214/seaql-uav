@@ -5,12 +5,18 @@ Set-Location -Path $PSScriptRoot
 
 # The saved models need Python 3.12 or 3.13 (pinned scikit-learn / XGBoost / LightGBM wheels)
 $py = "python"
+$ErrorActionPreference = "Continue"
 $ver = & $py -c "import sys; print('%d.%d' % sys.version_info[:2])"
+$ErrorActionPreference = "Stop"
 if ($ver -ne "3.12" -and $ver -ne "3.13") {
     if (Get-Command py -ErrorAction SilentlyContinue) {
-        foreach ($v in @("3.13", "3.12")) { & py -$v -c "pass" 2>$null; if ($LASTEXITCODE -eq 0) { $py = "py -$v"; $ver = $v; break } }
+        $ErrorActionPreference = "Continue"
+        foreach ($v in @("3.12", "3.13")) { & py -$v -c "pass" 2>$null; if ($LASTEXITCODE -eq 0) { $py = "py -$v"; $ver = $v; break } }
+        $ErrorActionPreference = "Stop"
     }
 }
+$p312 = Join-Path $env:LOCALAPPDATA "Programs\Python\Python312\python.exe"
+if ($ver -ne "3.12" -and $ver -ne "3.13" -and (Test-Path $p312)) { $py = "& `"$p312`""; $ver = "3.12" }
 if ($ver -ne "3.12" -and $ver -ne "3.13") {
     Write-Host "[SEAQL] Python $ver found. Please install Python 3.12 or 3.13 from python.org (64-bit) and run again." -ForegroundColor Red
     exit 1

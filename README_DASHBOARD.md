@@ -1,9 +1,9 @@
-# SEAQL — UAV Cybersecurity Mission Control (v6)
+# SEAQL — UAV Cybersecurity Operations Center (v9: command-center homepage + themed rooms)
 
 Premium SOC-style dashboard for the SEAQL Final Year Project
 (Bahria University, Lahore Campus · BSIT · project code BSIT-S26-013 · Supervisor: Ms. Munaza Sher).
 
-- **`dashboard.html`** — the security platform; opens on **Mission Control**
+- **`dashboard.html`** — the security platform in the original **V3 design**; opens on the **Security Command Center**
 - **AI Detection Lab** — serves your FYP model, the **Hybrid AE-Stacked Ensemble** (binary benign / attack), with Random Forest as a baseline · see `docs/HYBRID_MODEL_EVALUATION.md`
 - **`index.html`** — your original research website (unchanged)
 - **`legacy/dashboard_v2.html`** — the previous dashboard, kept as a backup
@@ -72,7 +72,7 @@ Without Python packages you can still run everything except real predictions:
 | 7 | Fleet Monitoring — 8 UAV cards + inspection drawer (real non-IID client data, simulated telemetry labelled) | Simulation + verified |
 | 8 | Incident Investigation Center — search, severity/type filters, details, related features, timeline, CSV/HTML reports | Simulation |
 | 9 | Research Analytics — binary vs 3-class results, model comparison, confusion matrices, class distribution, training curves, limitations | Verified experiment |
-| 10 | Viva Presentation Mode — 12 slides, Previous/Next/Restart/Fullscreen, ←/→ and F keys | — |
+| 10 | Viva Presentation Mode — 10 slides (also reachable from the header **Viva Mode** button), Previous/Next/Restart/Fullscreen, ←/→ and F keys | — |
 | 11 | Team & Documentation — project info, objectives status, architecture, stack, links | — |
 
 Every page marks content as **Verified experiment**, **Interactive simulation**, **Real model output** or **Future work**.
@@ -148,6 +148,30 @@ To add your group member, edit the `TEAM` list near the bottom of `app/js/views-
 - The 3D view needs WebGL; older/remote-desktop browsers get the 2D fallback.
 
 ## Changelog
+
+**v9 — command-center homepage + a unique "room" for every module**
+- Homepage rebuilt from the reference design: header (module search, notifications, Start FYP Viva, team panel), 5 KPI cards, SVG drone/globe/platform hero with Detect · Learn · Explain · Collaborate shortcuts, threat donut + attack trend, Hybrid performance, confusion matrix, model comparison, FL progress, fleet status, recent events, live topology.
+- Each module has its own palette, lighting, card style and animated banner (see `docs/DESIGN_SYSTEM_v9.md`).
+- Backend, models and APIs unchanged. Screenshots: `docs/screenshots_v9/`; tests: `TEST_RESULTS_v9.txt`.
+
+**v8 — premium visual design (Midnight Aurora)**
+- Same V3 layout, routes, backend and models; visual refinement only. Details: `docs/DESIGN_SYSTEM_v8.md`.
+- New palette (midnight navy, electric cyan + royal purple accents, emerald / coral / amber for status), glass cards, refined sidebar, KPI cards, buttons, tables, charts; animated home hero (SEAQL + drone).
+- Team list: Syed Measum Shah, Arooba Mansoor. Hybrid model stored in a portable format (works on Windows).
+- Screenshots: `docs/screenshots_v8/` (incl. `before_after_v7_v8.png`); tests: `TEST_RESULTS_v8.txt`.
+
+**v7 — V3 design restored, V6 functionality kept**
+- Frontend rebuilt from the original V3 source (`app/css/app.css`, `app/js/*`, `dashboard.html`): V3 layout, colours,
+  sidebar, cards, typography, charts and Security Command Center as the homepage. V5/V6 Mission Control and the V5
+  global restyle are removed.
+- Ported from V6 into the V3 design: AI Detection Lab with the model selector (Hybrid AE-Stacked Ensemble = default,
+  Random Forest = baseline), binary results, per-attack-type detection, model comparison, configurable API address
+  (`app/js/config.js`), updated Viva / Research / Team text for the live Hybrid model, research table row for the
+  re-trained Hybrid model.
+- Backend, trained models, JSON-safety fix and evaluation are the unchanged V6 versions.
+- Small functional fixes inside the V3 look: scrollable sidebar navigation, a header **Viva Mode** button, mobile
+  menu above its overlay, no horizontal overflow at 1366 px.
+- Proof screenshots: `docs/screenshots_v7/` (including `v3_vs_v7_dashboard.png`); tests: `TEST_RESULTS_v7.txt`.
 
 **v6 — Original FYP model in the AI Detection Lab**
 - Trained and saved the **Hybrid AE-Stacked Ensemble** with the original `uav_fl_hybrid_model_binary.py`

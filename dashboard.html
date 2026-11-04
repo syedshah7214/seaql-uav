@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>SEAQL | UAV Mission Control</title>
+<title>SEAQL | Security Command Center</title>
 <meta name="description" content="SEAQL — UAV Swarm Cybersecurity Platform: security operations dashboard, 3D swarm digital twin, attack simulation, AI intrusion detection, federated learning and explainable AI.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 3 L42 10 V23 C42 34 34 41.5 24 45 C14 41.5 6 34 6 23 V10 Z' fill='%2307111F' stroke='%2300D9FF' stroke-width='3'/%3E%3Crect x='19' y='19' width='10' height='10' rx='2' fill='%2300D9FF'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 3 L42 10 V23 C42 34 34 41.5 24 45 C14 41.5 6 34 6 23 V10 Z' fill='%23080E20' stroke='%2322D3EE' stroke-width='3'/%3E%3Crect x='19' y='19' width='10' height='10' rx='2' fill='%2322D3EE'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="app/css/app.css">
 </head>
 <body>
@@ -14,6 +14,7 @@
   <aside class="sidebar" aria-label="Main navigation">
     <a class="brand" href="#/dashboard"><span id="brandLogo"></span><span><b>SEAQL</b><small>UAV Swarm Security Platform</small></span></a>
     <nav class="nav" id="nav"></nav>
+    <div class="side-art" id="sideArt" aria-hidden="true"></div>
     <div class="side-foot" id="sideStatus" aria-live="polite"></div>
   </aside>
   <main class="main">
@@ -23,12 +24,18 @@
         <div><h1 id="pageTitle">Security Command Center</h1><p id="pageSub"></p></div>
       </div>
       <div class="top-actions">
+        <div class="msearch" id="modSearch" role="search">
+          <i data-lucide="search"></i>
+          <input id="modQ" type="search" placeholder="Search modules…" autocomplete="off" aria-label="Search modules" aria-controls="modRes" aria-expanded="false">
+          <kbd>/</kbd>
+          <div class="pop msearch-res" id="modRes" role="listbox"></div>
+        </div>
         <span class="clock" id="clock" aria-label="Local time"></span>
         <span class="pill live" id="simPill" aria-live="polite"></span>
         <button class="btn sm" id="simToggle"></button>
-        <div class="bell-wrap"><button class="btn sm icon" id="bellBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false"><i data-lucide="bell"></i></button><span class="bell-count" id="bellCount" hidden>0</span><div class="notif-pop" id="notifPop" role="dialog" aria-label="Notifications"></div></div>
-        <button class="btn sm icon" id="fsBtn" aria-label="Toggle fullscreen"><i data-lucide="maximize-2"></i></button>
-        <button class="btn sm viva-cta" id="vivaBtn"><i data-lucide="presentation"></i><span>Start FYP Viva</span></button>
+        <div class="pop-wrap"><button class="hbtn" id="bellBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false"><i data-lucide="bell"></i><span class="hbadge" id="bellBadge" hidden></span></button><div class="pop" id="bellPop" role="dialog" aria-label="Notifications"></div></div>
+        <button class="btn viva-cta" id="vivaBtn"><i data-lucide="play"></i><span>Start FYP Viva</span></button>
+        <div class="pop-wrap"><button class="hbtn avatar" id="profBtn" aria-label="Project and team" aria-haspopup="true" aria-expanded="false"><i data-lucide="user-round"></i></button><div class="pop" id="profPop" role="dialog" aria-label="Project and team"></div></div>
       </div>
     </header>
     <div id="view" tabindex="-1"></div>
@@ -44,9 +51,10 @@
 <script src="app/vendor/three.min.js"></script>
 <script src="app/data/seaql-data.js"></script>
 <script src="app/js/core.js"></script>
+<script src="app/js/rooms.js"></script>
+<script src="app/js/hero-art.js"></script>
 <script src="app/js/topology.js"></script>
 <script src="app/js/views-ops.js"></script>
-<script src="app/js/mission.js"></script>
 <script src="app/js/twin3d.js"></script>
 <script src="app/js/views-ai.js"></script>
 <script src="app/js/views-research.js"></script>

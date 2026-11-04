@@ -69,12 +69,12 @@
       renderer.domElement.setAttribute('aria-label', '3D view of the UAV swarm. Use the buttons to rotate, zoom or reset.');
       renderer.domElement.setAttribute('role', 'img');
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x050d1a);
-      scene.fog = new THREE.FogExp2(0x050d1a, 0.028);
+      scene.background = new THREE.Color(0x060a18);
+      scene.fog = new THREE.FogExp2(0x060a18, 0.028);
       const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
       scene.add(new THREE.AmbientLight(0x6fa8ff, 0.8));
       const dl = new THREE.DirectionalLight(0xffffff, 1.1); dl.position.set(6, 14, 8); scene.add(dl);
-      const cl = new THREE.PointLight(0x00d9ff, 40, 30, 1.6); cl.position.set(0, 3, 0); scene.add(cl);
+      const cl = new THREE.PointLight(0x22d3ee, 40, 30, 1.6); cl.position.set(0, 3, 0); scene.add(cl);
       const glowTex = glowTexture();
       const disposables = [glowTex];
       const mat = (o) => { const m = new THREE.MeshStandardMaterial(o); disposables.push(m); return m; };
@@ -89,12 +89,12 @@
       const cube = new THREE.Mesh(geo(new THREE.BoxGeometry(1.7, 1.7, 1.7)), mat({ color: 0x0a7fd8, emissive: 0x00a8ff, emissiveIntensity: 0.55, metalness: 0.3, roughness: 0.25 }));
       cube.position.y = 1.6; agg.add(cube);
       const edges = new THREE.LineSegments(geo(new THREE.EdgesGeometry(cube.geometry)), new THREE.LineBasicMaterial({ color: 0x9ff3ff })); edges.position.copy(cube.position); agg.add(edges); disposables.push(edges.material);
-      const aggGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x00d9ff, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false })); aggGlow.scale.set(7, 7, 1); aggGlow.position.y = 1.6; agg.add(aggGlow); disposables.push(aggGlow.material);
-      const rings = [1.6, 2.3].map((r, i) => { const m = new THREE.Mesh(geo(new THREE.TorusGeometry(r, 0.025, 8, 96)), new THREE.MeshBasicMaterial({ color: 0x00d9ff, transparent: true, opacity: 0.6 - i * 0.2 })); m.rotation.x = Math.PI / 2; m.position.y = 0.12 + i * 0.05; agg.add(m); disposables.push(m.material); return m; });
+      const aggGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x22d3ee, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false })); aggGlow.scale.set(7, 7, 1); aggGlow.position.y = 1.6; agg.add(aggGlow); disposables.push(aggGlow.material);
+      const rings = [1.6, 2.3].map((r, i) => { const m = new THREE.Mesh(geo(new THREE.TorusGeometry(r, 0.025, 8, 96)), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.6 - i * 0.2 })); m.rotation.x = Math.PI / 2; m.position.y = 0.12 + i * 0.05; agg.add(m); disposables.push(m.material); return m; });
 
       // clusters
       const CL = { A: new THREE.Vector3(-7, 0, 0.4), B: new THREE.Vector3(7, 0, 0.4) };
-      const CCOL = { A: 0x00d9ff, B: 0xa15bff };
+      const CCOL = { A: 0x22d3ee, B: 0x8b5cf6 };
       const hubs = {};
       Object.entries(CL).forEach(([k, c]) => {
         const pts = []; for (let i = 0; i <= 96; i++) { const a = (i / 96) * Math.PI * 2; pts.push(new THREE.Vector3(c.x + Math.cos(a) * 4.4, 0.05, c.z + Math.sin(a) * 3.6)); }
@@ -122,18 +122,18 @@
         g.userData = { idx: u.idx, base: g.position.y, phase: u.idx * 0.9 };
         g.scale.setScalar(1.25);
         const body = new THREE.Mesh(geo(new THREE.BoxGeometry(0.62, 0.2, 0.62)), bodyMat); g.add(body);
-        const statusMat = new THREE.MeshStandardMaterial({ color: 0x22e39a, emissive: 0x22e39a, emissiveIntensity: 1.2 }); disposables.push(statusMat);
+        const statusMat = new THREE.MeshStandardMaterial({ color: 0x34d399, emissive: 0x34d399, emissiveIntensity: 1.2 }); disposables.push(statusMat);
         const top = new THREE.Mesh(geo(new THREE.BoxGeometry(0.36, 0.08, 0.36)), statusMat); top.position.y = 0.13; g.add(top);
         const a1 = new THREE.Mesh(armGeo, armMat); a1.rotation.y = Math.PI / 4; g.add(a1);
         const a2 = new THREE.Mesh(armGeo, armMat); a2.rotation.y = -Math.PI / 4; g.add(a2);
         const rotors = [];
         [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([x, z]) => {
-          const rm = new THREE.MeshBasicMaterial({ color: 0x22e39a, transparent: true, opacity: 0.4, side: THREE.DoubleSide }); disposables.push(rm);
+          const rm = new THREE.MeshBasicMaterial({ color: 0x34d399, transparent: true, opacity: 0.4, side: THREE.DoubleSide }); disposables.push(rm);
           const r = new THREE.Mesh(rotorGeo, rm); r.position.set(x * 0.51, 0.1, z * 0.51); g.add(r); rotors.push(r);
           const h = new THREE.Mesh(hubGeo, armMat); h.position.set(x * 0.51, 0.04, z * 0.51); g.add(h);
         });
-        const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x22e39a, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })); glow.scale.set(3.2, 3.2, 1); g.add(glow); disposables.push(glow.material);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0xff4d6a, transparent: true, opacity: 0 }); disposables.push(ringMat);
+        const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x34d399, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })); glow.scale.set(3.2, 3.2, 1); g.add(glow); disposables.push(glow.material);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xff5a76, transparent: true, opacity: 0 }); disposables.push(ringMat);
         const ring = new THREE.Mesh(geo(new THREE.TorusGeometry(0.9, 0.03, 8, 64)), ringMat); ring.rotation.x = Math.PI / 2; g.add(ring);
         const selRing = new THREE.Mesh(geo(new THREE.TorusGeometry(0.75, 0.025, 8, 64)), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 })); selRing.rotation.x = Math.PI / 2; selRing.position.y = -0.25; g.add(selRing); disposables.push(selRing.material);
         // stem (shadow line to floor)
@@ -156,7 +156,7 @@
       const aggPos = new THREE.Vector3(0, 1.6, 0);
       const hubLinks = {};
       Object.entries(hubs).forEach(([k, h]) => { hubLinks[k] = mkLink(h.position, aggPos, CCOL[k], 'hub' + k); });
-      drones.forEach((d) => { d.link = mkLink(d.g.position.clone(), hubs[S.state().uavs[d.idx].cluster].position, 0x00d9ff, 'd' + d.idx); });
+      drones.forEach((d) => { d.link = mkLink(d.g.position.clone(), hubs[S.state().uavs[d.idx].cluster].position, 0x22d3ee, 'd' + d.idx); });
 
       // HTML labels
       const labelHost = $('#twLabels');
@@ -205,14 +205,14 @@
           d.statusMat.color.copy(c); d.statusMat.emissive.copy(c);
           d.glow.material.color.copy(c); d.rotors.forEach((r) => r.material.color.copy(c));
           d.status = u.status; d.type = u.attackType;
-          const lc = u.status === 'normal' ? new THREE.Color(0x00d9ff) : c;
+          const lc = u.status === 'normal' ? new THREE.Color(0x22d3ee) : c;
           d.link.lm.color.copy(lc); d.link.pk.forEach((p) => p.material.color.copy(lc));
           d.link.fast = u.status === 'attack' && u.attackType === 'DoS';
           d.link.lm.opacity = u.status === 'normal' ? 0.45 : 0.9;
         });
         Object.entries(hubLinks).forEach(([k, L]) => {
           const hot = st.uavs.some((u) => u.cluster === k && u.status === 'attack');
-          const c = hot ? new THREE.Color(0xff4d6a) : new THREE.Color(CCOL[k]);
+          const c = hot ? new THREE.Color(0xff5a76) : new THREE.Color(CCOL[k]);
           L.lm.color.copy(c); L.pk.forEach((p) => p.material.color.copy(c));
         });
         det();

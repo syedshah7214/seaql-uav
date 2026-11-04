@@ -101,46 +101,101 @@
   /* 1. COMMAND CENTER                                                   */
   /* ------------------------------------------------------------------ */
   S.view('dashboard', {
-    title: 'Security Command Center',
-    subtitle: 'Real-time monitoring of UAV swarm cybersecurity · interactive simulation with verified research metrics',
+    title: 'UAV Cybersecurity Operations Center',
+    subtitle: 'Scalable • Explainable • Adaptive Federated Learning',
+    subtitleHtml: '<span class="c-cyan">Scalable</span> • Explainable • Adaptive Federated Learning',
     render(el) {
-      const hb = D.hybridBinary || {};
+      const L = D.liveHybrid || {}, HM = L.heldout_metrics || {}, CM = (L.heldout_confusion_matrix || {}).matrix || [[0, 0], [0, 0]];
+      const RF = D.localModel || {}, FT = D.federatedTest || {}, FR = D.federatedRounds || [], CFG = D.config || {};
+      const testRows = CM.flat().reduce((a, b) => a + b, 0);
+      const commRed = FR.length ? 1 - FR[0].topkBytes / FR[0].fullBytes : null;
+      const rfBin = (D.binaryBaseline || []).find((b) => /Random Forest/.test(b.model));
+      const p2 = (v) => (v == null ? '—' : (v * 100).toFixed(2) + '%');
+      const sparkline = (arr, c1, c2, id) => {
+        if (!arr || arr.length < 2) return '';
+        const w = 96, h = 34, mn = Math.min(...arr), mx = Math.max(...arr), rg = mx - mn || 1;
+        const pts = arr.map((v, i) => [(i / (arr.length - 1)) * w, h - 4 - ((v - mn) / rg) * (h - 10)]);
+        const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+        return `<svg class="kp-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sp${id}" x1="0" x2="1"><stop stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient><linearGradient id="sf${id}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${c1}" stop-opacity=".35"/><stop offset="1" stop-color="${c1}" stop-opacity="0"/></linearGradient></defs><path d="${d} L${w} ${h} L0 ${h}Z" fill="url(#sf${id})"/><path d="${d}" fill="none" stroke="url(#sp${id})" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      };
+      const gauge = (v, c1, c2, id) => { const r = 14, C = 2 * Math.PI * r; return `<svg class="kp-gauge" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="gg${id}"><stop stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><circle cx="20" cy="20" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/><circle cx="20" cy="20" r="${r}" fill="none" stroke="url(#gg${id})" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(C * v).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/></svg>`; };
+      const kpi = (cls, icon, val, label, foot, viz, title) => `<article class="kp ${cls}" title="${esc(title)}"><span class="kp-ic">${icon === 'drone' ? S.droneSVG('#22D3EE', false) : `<i data-lucide="${icon}"></i>`}</span><div class="kp-main"><strong>${val}</strong><span>${label}</span><small>${foot}</small></div><div class="kp-viz">${viz}</div></article>`;
       el.innerHTML = `
-      <section class="kpis" aria-label="Key indicators">
-        <article class="kpi blue"><div class="kpi-l">Total UAVs <i data-lucide="layers"></i></div><div class="kpi-v"><span class="ic">${S.droneSVG('#22B8FF', false)}</span><strong id="kTotal">8</strong></div><div class="kpi-s"><span>2 clusters · 4 + 4</span><span class="up">Cluster A · B</span></div></article>
-        <article class="kpi green"><div class="kpi-l">Active UAVs <i data-lucide="wifi"></i></div><div class="kpi-v"><span class="ic"><i data-lucide="radio-tower"></i></span><strong id="kActive">8</strong><em>/ 8</em></div><div class="kpi-s"><span id="kActiveS">All nodes healthy</span></div></article>
-        <article class="kpi red"><div class="kpi-l">Detected Attacks <i data-lucide="siren"></i></div><div class="kpi-v"><span class="ic"><i data-lucide="shield-alert"></i></span><strong id="kAtt">0</strong></div><div class="kpi-s"><span id="kAttS">This session</span></div></article>
-        <article class="kpi green" id="kScoreCard"><div class="kpi-l">Security Score <i data-lucide="gauge"></i></div><div class="kpi-v"><span class="ic"><i data-lucide="shield-check"></i></span><strong id="kScore">—</strong><em>/ 100</em></div><div class="kpi-s"><span id="kScoreS">Simulated swarm health</span></div></article>
+      <section class="kps" aria-label="Key indicators">
+        ${kpi('c1', 'drone', '8', 'UAV Nodes', '<span id="kpNodes">8 online</span> · sim', '<span id="kpNodeSpark"></span>', 'Simulated swarm; sparkline = live simulated traffic')}
+        ${kpi('c2', 'layers', String(CFG.n_clusters || 2), 'FL Clusters', `${(D.clusterMap || [[], []]).map((c) => c.length).join(' + ')} clients`, sparkline((D.nonIid || []).map((c) => c.samples), '#8B5CF6', '#E879F9', 'b'), 'Sparkline = real non-IID sample count per FL client')}
+        ${kpi('c3', 'workflow', String(FR.length || CFG.fl_rounds || 5), 'FL Rounds', 'val macro F1 / round', sparkline(FR.map((r) => r.valMacroF1), '#22D3EE', '#6D8BFF', 'c'), 'Sparkline = recorded validation macro F1 per round')}
+        ${kpi('c4', 'target', p2(HM.accuracy), 'Hybrid Accuracy', `held-out · ${num(testRows)} rows`, gauge(HM.accuracy || 0, '#22D3EE', '#34D399', 'd'), 'Verified: saved Hybrid AE-Stack, held-out test split')}
+        ${kpi('c5', 'shield-check', p2(HM.auc), 'ROC AUC', 'binary · benign vs attack', gauge(HM.auc || 0, '#8B5CF6', '#E879F9', 'e'), 'Verified: saved Hybrid AE-Stack, held-out test split')}
       </section>
-      <div class="cc-grid">
+
+      <div class="hp-top">
+        <section class="hero2" aria-label="SEAQL">
+          <div class="h2-particles" aria-hidden="true">${S.heroParticles(30)}</div>
+          <div class="h2-text">
+            <h1 class="h2-title">SEAQL</h1>
+            <h2 class="h2-sub">UAV Swarm<br>Cybersecurity</h2>
+            <p class="h2-lead">Hybrid AI + Federated Learning<br>for Intelligent UAV Threat Detection</p>
+            <nav class="h2-short" aria-label="Shortcuts">
+              <a href="#/detect"><span><i data-lucide="activity"></i></span>Detect</a>
+              <a href="#/federated"><span><i data-lucide="layers"></i></span>Learn</a>
+              <a href="#/xai"><span><i data-lucide="chart-column-big"></i></span>Explain</a>
+              <a href="#/about"><span><i data-lucide="users"></i></span>Collaborate</a>
+            </nav>
+          </div>
+          <div class="h2-stage" aria-hidden="true">
+            <div class="h2-globe">${S.heroGlobeSVG()}</div>
+            <div class="h2-orbit o1"></div><div class="h2-orbit o2"></div>
+            ${S.heroPlatformSVG()}
+            ${S.heroDroneSVG()}
+          </div>
+        </section>
+        <div class="hp-side">
+          <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="radar"></i>Threat Events</h3><p>Traffic windows · this session</p></div>${S.tag.simShort}</div>
+            <div class="thr"><div class="donut"><canvas id="ccDonut" aria-label="Threat distribution chart"></canvas><div class="c"><div><strong id="ccWin">0</strong><small>traffic windows</small></div></div></div>
+            <div class="legend-list" id="ccLegend"></div></div></article>
+          <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="chart-spline"></i>Attack Trend</h3><p>Packets/s by class · last 60 s · log scale</p></div>${S.tag.simShort}</div>
+            <div class="chart-box" style="height:150px"><canvas id="ccTrend" aria-label="Attack trend chart"></canvas></div></article>
+        </div>
+      </div>
+
+      <div class="hp-grid">
+        <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="gauge"></i>Hybrid Model Performance</h3><p>Held-out test split · binary</p></div>${S.tag.verShort}</div>
+          <div class="mtiles"><div class="mt-g"><i data-lucide="trophy"></i><strong>${p2(HM.accuracy)}</strong><small>Accuracy</small></div><div class="mt-p"><i data-lucide="layers"></i><strong>${p2(HM.macro_f1)}</strong><small>Macro F1</small></div><div class="mt-b"><i data-lucide="activity"></i><strong>${p2(HM.auc)}</strong><small>ROC AUC</small></div></div></article>
+        <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="grid-2x2"></i>Confusion Matrix</h3><p>Test set: ${num(testRows)} rows</p></div>${S.tag.verShort}</div>
+          <div class="cmx"><span></span><b>Pred. Benign</b><b>Pred. Attack</b>
+            <b>Actual Benign</b><span class="ok">${num(CM[0][0])}</span><span class="er">${num(CM[0][1])}</span>
+            <b>Actual Attack</b><span class="er">${num(CM[1][0])}</span><span class="ok2">${num(CM[1][1])}</span></div></article>
+        <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="scale"></i>Model Comparison</h3><p>Held-out results, seed 42</p></div>${S.tag.verShort}</div>
+          <table class="mcmp"><thead><tr><th>Model</th><th>Accuracy</th><th>Macro F1</th><th>ROC AUC</th></tr></thead><tbody>
+            <tr class="win"><td>Hybrid (Ours) <i data-lucide="crown"></i><small>binary</small></td><td>${p2(HM.accuracy)}</td><td>${p2(HM.macro_f1)}</td><td>${p2(HM.auc)}</td></tr>
+            <tr><td>Random Forest<small>3-class</small></td><td>${p2(RF.accuracy)}</td><td>${p2(RF.macro_f1)}</td><td>${p2(RF.macro_ovr_auc)}</td></tr>
+            ${rfBin ? `<tr><td>RF quick baseline<small>binary</small></td><td>${p2(rfBin.accuracy)}</td><td>—</td><td>—</td></tr>` : ''}
+          </tbody></table><p class="hp-note">Different tasks: binary vs 3-class figures are not directly comparable.</p></article>
+        <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="network"></i>Federated Learning</h3><p>Recorded 3-class FL run</p></div>${S.tag.verShort}</div>
+          <div class="flp"><div class="ring">${(() => { const r = 44, C = 2 * Math.PI * r, v = FT.macroF1 || 0; return `<svg viewBox="0 0 110 110" aria-hidden="true"><defs><linearGradient id="flg" x1="0" x2="1"><stop stop-color="#22D3EE"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs><circle cx="55" cy="55" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="9"/><circle cx="55" cy="55" r="${r}" fill="none" stroke="url(#flg)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * v).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 55 55)"/></svg>`; })()}<div><strong>${pct(FT.macroF1)}</strong><small>Macro F1</small></div></div>
+            <dl><dt><i data-lucide="radio-tower"></i>Clients</dt><dd>${CFG.n_clients || 8}</dd><dt><i data-lucide="repeat"></i>Rounds</dt><dd>${FT.rounds || FR.length}</dd><dt><i data-lucide="split"></i>Data split</dt><dd>Non-IID · α ${CFG.dirichlet_alpha ?? 0.3}</dd><dt><i data-lucide="minimize-2"></i>Comm. reduction</dt><dd>${commRed == null ? '—' : (commRed * 100).toFixed(1) + '%'}</dd></dl></div></article>
+        <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="plane"></i>UAV Fleet Status</h3><p>Live simulated swarm</p></div>${S.tag.simShort}</div>
+          <div class="fls" id="hpFleet"></div></article>
+        <article class="panel hp"><div class="panel-h"><div><h3><i data-lucide="siren"></i>Recent Security Events</h3><p>Simulation engine</p></div><button class="btn sm ghost" id="ccAllAlerts">View all</button></div>
+          <div class="table-wrap ev"><table class="t"><thead><tr><th>Time</th><th>Event</th><th>Severity</th></tr></thead><tbody id="hpEvents"></tbody></table></div></article>
+      </div>
+
+      <div class="cc-grid mt">
         <div class="cc-left">
-          <article class="panel fill" style="padding-bottom:12px">
-            <div class="panel-h"><div><h2>UAV Swarm Network</h2><p>8 UAV clients → 2 cluster aggregators → global aggregator · click a drone to inspect</p></div><div class="right">${S.tag.sim}<button class="btn sm" id="ccOpen3d"><i data-lucide="rotate-3d"></i>3D view</button></div></div>
+          <article class="panel fill hp" style="padding-bottom:12px">
+            <div class="panel-h"><div><h3><i data-lucide="share-2"></i>Live Swarm Topology</h3><p>8 UAV clients → 2 cluster aggregators → global aggregator · click a drone to inspect</p></div><div class="right">${S.tag.sim}<button class="btn sm" id="ccOpen3d"><i data-lucide="rotate-3d"></i>3D view</button></div></div>
             <div class="topo" id="ccTopo"></div>
             <div class="topo-legend" style="position:static;margin-top:10px;display:inline-flex"><span><i class="lg normal"></i>Normal</span><span><i class="lg attack"></i>Under attack</span><span><i class="lg suspicious"></i>Suspicious</span><span><i class="lg training"></i>Training</span><span><i class="lg agg"></i>Aggregator</span></div>
           </article>
         </div>
         <div class="cc-right">
-          <article class="panel"><div class="panel-h"><div><h2>Recent Alerts</h2><p>Generated by the simulation engine</p></div><button class="btn sm ghost" id="ccAllAlerts">View all</button></div><div class="alerts" id="ccAlerts"></div></article>
-          <article class="panel"><div class="panel-h"><div><h3>Simulation Control</h3><p id="ccScen">—</p></div></div>
+          <article class="panel hp"><div class="panel-h"><div><h3>Simulation Control</h3><p id="ccScen">—</p></div></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="ccPlay"></button><button class="btn sm" id="ccReset"><i data-lucide="rotate-ccw"></i>Reset</button><button class="btn sm primary" id="ccLab"><i data-lucide="zap"></i>Attack lab</button></div>
             <div class="seg mt" role="group" aria-label="Quick scenario" id="ccQuick" style="display:flex;width:100%">${Object.entries(S.SCEN).map(([k, v]) => `<button data-k="${k}" style="flex:1">${v.name.split(' ')[0]}</button>`).join('')}</div>
           </article>
+          <article class="panel hp"><div class="panel-h"><div><h3>Recent Alerts</h3><p>Generated by the simulation engine</p></div></div><div class="alerts" id="ccAlerts" style="max-height:250px"></div></article>
         </div>
-      </div>
-      <div class="grid mt" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr)" id="ccRow2">
-        <article class="panel"><div class="panel-h"><div><h3>Network Traffic <span class="muted" style="font-weight:500">(packets/s)</span></h3><p>Swarm-wide, last 60 s</p></div><div class="right"><span class="pill" style="padding:5px 10px" id="ccRate">—</span></div></div><div class="chart-box"><canvas id="ccTraffic" aria-label="Network traffic chart"></canvas></div></article>
-        <article class="panel"><div class="panel-h"><div><h3>Threat Distribution</h3><p>Traffic windows classified (sim)</p></div></div>
-          <div class="donut-wrap"><div class="donut"><canvas id="ccDonut" aria-label="Threat distribution chart"></canvas><div class="c"><div><strong id="ccWin">0</strong><small>windows</small></div></div></div>
-          <div class="legend-list" id="ccLegend"></div></div></article>
-        <article class="panel"><div class="panel-h"><div><h3>Model Performance</h3><p>Final hybrid model · binary test set</p></div><span class="tag verified" title="Verified experiment"><i data-lucide="badge-check"></i>Verified</span></div>
-          <div class="perf"><div><small>Accuracy</small><strong>${pct(hb.accuracy)}</strong></div><div><small>Macro F1</small><strong>${pct(hb.macro_f1)}</strong></div><div><small>ROC AUC</small><strong>${pct(hb.auc)}</strong></div></div>
-          <p class="muted" style="font-size:11.5px;margin:10px 0 0">Hybrid AE-Stacked Ensemble, attack-vs-benign, ${num(D.hybridBinaryConfusion?.testRows || 0)} held-out rows. Federated 3-class MLP: <b class="t2">${pct(D.federatedTest?.macroF1)}</b> macro F1 (different task).</p>
-          <a class="btn sm mt" href="#/research" style="width:100%"><i data-lucide="chart-column"></i>Open research analytics</a></article>
-      </div>
-      <div class="grid g-2 mt">
-        <article class="panel"><div class="panel-h"><div><h3>Recent Events</h3><p>Session timeline</p></div><button class="btn sm" id="ccExport"><i data-lucide="download"></i>Export log</button></div><ul class="timeline" id="ccTimeline"></ul></article>
-        <article class="panel"><div class="panel-h"><div><h3>System Health</h3><p>Simulated platform indicators</p></div>${S.tag.sim}</div><div class="health" id="ccHealth"></div></article>
       </div>`;
 
       const topo = S.topology($('#ccTopo'), { onSelect: (i) => S.openUav(i) });
@@ -151,62 +206,45 @@
       $('#ccReset').onclick = () => S.sim.reset();
       $('#ccQuick').onclick = (e) => { const b = e.target.closest('button'); if (b) S.sim.setScenario(b.dataset.k); };
       $('#ccAlerts').onclick = (e) => { const b = e.target.closest('[data-uav]'); if (b) S.openUav(+b.dataset.uav); };
-      $('#ccExport').onclick = () => {
-        const st = S.state();
-        S.download('seaql_simulation_event_log.csv', S.csv([['time', 'level', 'event', 'category'], ...st.timeline.map((e) => [new Date(e.t).toISOString(), e.level, e.text, 'interactive simulation'])]), 'text/csv');
-        S.toast('Event log exported', 'seaql_simulation_event_log.csv', 'ok');
-      };
+      $('#hpEvents').onclick = (e) => { const r = e.target.closest('[data-uav]'); if (r) S.openUav(+r.dataset.uav); };
 
-      const tctx = $('#ccTraffic').getContext('2d');
-      const traffic = S.chart($('#ccTraffic'), {
-        type: 'line',
-        data: { labels: [], datasets: [
-          { label: 'Benign', data: [], borderColor: '#00D9FF', backgroundColor: S.gradient(tctx, 210, 'rgba(0,217,255,.35)', 'rgba(0,217,255,0)'), fill: true, tension: .35, pointRadius: 0, borderWidth: 2 },
-          { label: 'Malicious', data: [], borderColor: '#FF4D6A', backgroundColor: S.gradient(tctx, 210, 'rgba(255,77,106,.25)', 'rgba(255,77,106,0)'), fill: true, tension: .35, pointRadius: 0, borderWidth: 2 },
-        ] },
-        options: { animation: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top', align: 'end' } },
-          scales: { x: { ticks: { maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: (v) => (v >= 1000 ? v / 1000 + 'k' : v) } } } },
-      });
+      const CL = { dos: '#FF4F8B', replay: '#A78BFA', benign: '#22D3EE' };
       const donut = S.chart($('#ccDonut'), {
-        type: 'doughnut', data: { labels: ['Benign', 'DoS', 'Replay'], datasets: [{ data: [1, 0, 0], backgroundColor: ['#00D9FF', '#FF4D6A', '#FFC23D'], borderColor: '#0B1A30', borderWidth: 3, hoverOffset: 4 }] },
-        options: { cutout: '72%', plugins: { legend: { display: false } }, animation: { duration: 400 } },
+        type: 'doughnut', data: { labels: ['DoS', 'Replay', 'Benign'], datasets: [{ data: [0, 0, 1], backgroundColor: [CL.dos, CL.replay, CL.benign], borderColor: '#0E1638', borderWidth: 3, hoverOffset: 5 }] },
+        options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.label}: ${num(c.raw)} windows` } } }, animation: { duration: 400 } },
+      });
+      const tctx = $('#ccTrend').getContext('2d');
+      const ds = (label, key, c) => ({ label, key, data: [], borderColor: c, backgroundColor: S.gradient(tctx, 150, c + '55', c + '00'), fill: true, tension: .4, pointRadius: 0, borderWidth: 2 });
+      const trend = S.chart($('#ccTrend'), {
+        type: 'line', data: { labels: [], datasets: [ds('DoS', 'dos', CL.dos), ds('Replay', 'replay', CL.replay), ds('Benign', 'benign', CL.benign)] },
+        options: { animation: false, interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, font: { size: 11 } } }, tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${num(c.raw ?? 0)} pkt/s` } } },
+          scales: { x: { ticks: { maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } }, y: { type: 'logarithmic', min: 10, ticks: { callback: (v) => ([10, 100, 1000, 10000, 100000].includes(v) ? (v >= 1000 ? v / 1000 + 'k' : v) : '') }, grid: { color: 'rgba(140,165,230,.08)' } } } },
       });
 
       function paint(st) {
-        const att = st.uavs.filter((u) => u.status === 'attack').length;
-        const sus = st.uavs.filter((u) => u.status === 'suspicious').length;
-        $('#kActive').textContent = 8 - att;
-        $('#kActiveS').textContent = att ? `${att} compromised · ${sus} suspicious` : sus ? `${sus} suspicious` : 'All nodes healthy';
-        $('#kAtt').textContent = st.incidents.length;
-        const open = st.incidents.filter((i) => i.status === 'Open').length;
-        $('#kAttS').textContent = `${open} open · ${st.incidents.length - open} resolved`;
-        const sc = S.sim.score();
-        $('#kScore').textContent = sc.toFixed(1);
-        $('#kScoreCard').className = 'kpi ' + (sc >= 90 ? 'green' : sc >= 75 ? 'amber' : 'red');
-        $('#kScoreS').textContent = `Severity: ${S.sim.severity()} · simulated`;
-        $('#ccAlerts').innerHTML = st.alerts.length ? st.alerts.slice(0, 7).map((a) => `
+        const cnt = { normal: 0, training: 0, suspicious: 0, attack: 0 }; st.uavs.forEach((u) => cnt[u.status]++);
+        $('#kpNodes').textContent = `${8 - cnt.attack} healthy`;
+        $('#kpNodeSpark').innerHTML = sparkline(st.traffic.slice(-30).map((p) => p.benign + p.malicious), '#22D3EE', '#8B5CF6', 'a');
+        const w = st.windows, tot = w.benign + w.dos + w.replay || 1;
+        donut.data.datasets[0].data = [w.dos, w.replay, w.benign]; donut.update();
+        $('#ccWin').textContent = num(w.benign + w.dos + w.replay);
+        $('#ccLegend').innerHTML = [['DoS', w.dos, CL.dos], ['Replay', w.replay, CL.replay], ['Benign', w.benign, CL.benign]].map(([n, v, c]) => `<div><i class="lg" style="background:${c};box-shadow:0 0 8px ${c};border-radius:3px"></i><span>${n}</span><b>${(v / tot * 100).toFixed(1)}%</b></div>`).join('');
+        trend.data.labels = st.traffic.map((p) => time(p.t).slice(3));
+        trend.data.datasets.forEach((d) => { d.data = st.traffic.map((p) => (p[d.key] ?? (d.key === 'benign' ? p.benign : 0)) || null); });
+        trend.update('none');
+        $('#hpFleet').innerHTML = [['ok', cnt.normal + cnt.training, 'Operational', '#34D399'], ['mon', cnt.suspicious, 'Under Monitor', '#FBBF24'], ['atk', cnt.attack, 'Under Attack', '#FF5A76']]
+          .map(([k, v, l, c]) => `<div class="fl-${k}">${S.droneSVG(c, false)}<strong>${v}</strong><small>${l}</small></div>`).join('');
+        const sevLbl = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+        $('#hpEvents').innerHTML = st.alerts.length ? st.alerts.slice(0, 4).map((a) => `<tr class="click" data-uav="${+a.uav.slice(4) - 1}"><td class="mono">${time(a.t)}</td><td><span class="evi ${a.sev}"><i data-lucide="${sevIcon[a.sev]}"></i></span>${esc(a.title.replace(/ - UAV-\d+$/, ''))} <small class="mono muted">${esc(a.uav)}</small></td><td><span class="sevp ${a.sev}">${sevLbl[a.sev]}</span></td></tr>`).join('')
+          : '<tr><td colspan="3" class="muted">No events yet — all traffic benign</td></tr>';
+        $('#ccAlerts').innerHTML = st.alerts.length ? st.alerts.slice(0, 6).map((a) => `
           <button class="alert" data-uav="${+a.uav.slice(4) - 1}"><span class="ai ${a.sev}"><i data-lucide="${sevIcon[a.sev]}"></i></span><span><b>${esc(a.title)}</b><small>${esc(a.detail)}</small></span><time>${ago(a.t)}</time></button>`).join('')
           : '<div class="empty"><i data-lucide="shield-check"></i>No alerts — all traffic benign</div>';
         $('#ccScen').innerHTML = `${S.SCEN[st.scenario].name} · ${hms(S.sim.elapsed())} · ${st.speed}×`;
         $('#ccPlay').innerHTML = st.running ? '<i data-lucide="pause"></i>Pause' : '<i data-lucide="play"></i>Start';
         $('#ccPlay').className = 'btn sm ' + (st.running ? '' : 'success');
         $$('#ccQuick button').forEach((b) => b.classList.toggle('on', b.dataset.k === st.scenario));
-        traffic.data.labels = st.traffic.map((p) => time(p.t).slice(3));
-        traffic.data.datasets[0].data = st.traffic.map((p) => p.benign);
-        traffic.data.datasets[1].data = st.traffic.map((p) => p.malicious);
-        traffic.update('none');
-        const last = st.traffic[st.traffic.length - 1] || { benign: 0, malicious: 0 };
-        $('#ccRate').innerHTML = `<span class="dot ${last.malicious ? 'red' : ''}"></span>${num(last.benign + last.malicious)} pkt/s`;
-        const w = st.windows, tot = w.benign + w.dos + w.replay || 1;
-        donut.data.datasets[0].data = [w.benign, w.dos, w.replay]; donut.update();
-        $('#ccWin').textContent = num(w.benign + w.dos + w.replay);
-        $('#ccLegend').innerHTML = [['Benign', w.benign, 'normal'], ['DoS', w.dos, 'attack'], ['Replay', w.replay, 'suspicious']].map(([n, v, c]) => `<div><i class="lg ${c}"></i><span>${n}</span><b>${(v / tot * 100).toFixed(1)}%</b></div>`).join('');
-        $('#ccTimeline').innerHTML = st.timeline.slice(0, 14).map((e) => `<li><time>${time(e.t)}</time><span class="tl-dot"><i class="${e.level}"></i></span><span>${esc(e.text)}</span></li>`).join('');
-        const load = Math.min(100, (last.benign + last.malicious) / 180);
-        const hp = [['Aggregator link', 100 - att * 4, 'g', '%'], ['Cluster A availability', 100 - st.uavs.filter((u) => u.cluster === 'A' && u.status === 'attack').length * 25, 'g', '%'],
-          ['Cluster B availability', 100 - st.uavs.filter((u) => u.cluster === 'B' && u.status === 'attack').length * 25, 'g', '%'], ['Network load', load, load > 60 ? 'r' : load > 30 ? 'a' : '', '%'],
-          ['Detector pipeline', st.running ? 100 : 0, st.running ? 'g' : 'a', st.running ? '% online' : ' paused']];
-        $('#ccHealth').innerHTML = hp.map(([n, v, c, u]) => `<div class="hrow"><span>${n}</span><b class="mono">${Math.round(v)}${u}</b><div class="bar ${c}"><span style="width:${Math.max(2, v)}%"></span></div></div>`).join('');
         S.icons();
       }
       paint(S.state());
@@ -254,7 +292,7 @@
       const sp = $('#alSpeed'); sp.value = S.state().speed;
       sp.oninput = () => { S.sim.setSpeed(sp.value); sp.setAttribute('aria-valuetext', sp.value + 'x'); };
 
-      const palette = ['#00D9FF', '#A15BFF', '#22E39A', '#2F7BFF', '#7DEBFF', '#C59BFF', '#14C27E', '#5B6CFF'];
+      const palette = ['#22D3EE', '#8B5CF6', '#34D399', '#5B7CFA', '#8BE9F7', '#B9A2FF', '#0EA672', '#7C6CF6'];
       const ch = S.chart($('#alChart'), {
         type: 'line', data: { labels: [], datasets: S.state().uavs.map((u, i) => ({ label: u.id, data: [], borderColor: palette[i], pointRadius: 0, borderWidth: 1.6, tension: .3 })) },
         options: { animation: false, interaction: { mode: 'nearest', intersect: false }, plugins: { legend: { position: 'bottom', labels: { font: { size: 10.5 } } } },
@@ -317,7 +355,7 @@
           S.icons();
         }
         ch.data.datasets[0].data = st.uavs.map((u) => u.packets);
-        ch.data.datasets[0].backgroundColor = st.uavs.map((u) => (u.status === 'normal' ? 'rgba(0,217,255,.7)' : S.COLORS[u.status]));
+        ch.data.datasets[0].backgroundColor = st.uavs.map((u) => (u.status === 'normal' ? 'rgba(34,211,238,.7)' : S.COLORS[u.status]));
         ch.update('none');
       }
       paint(S.state());

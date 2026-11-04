@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 
 HYBRID_DIR = Path(__file__).resolve().parent / "models" / "hybrid"
-REQUIRED = ["preprocessor.joblib", "stack.joblib", "autoencoder_numpy.npz", "model_card.json"]
+REQUIRED = ["preprocessor.joblib", "autoencoder_numpy.npz", "model_card.json"]
 
 
 def ae_features_numpy(w: dict, X: np.ndarray) -> np.ndarray:
@@ -37,7 +37,26 @@ def ae_features_numpy(w: dict, X: np.ndarray) -> np.ndarray:
 
 
 def missing_artifacts() -> list[str]:
-    return [f for f in REQUIRED if not (HYBRID_DIR / f).exists()]
+    miss = [f for f in REQUIRED if not (HYBRID_DIR / f).exists()]
+    portable = (HYBRID_DIR / "stack_portable.joblib").exists() and (HYBRID_DIR / "xgb_boosters.json").exists()
+    if not portable and not (HYBRID_DIR / "stack.joblib").exists():
+        miss.append("stack.joblib")
+    return miss
+
+
+def load_stack():
+    """Prefer the portable copy (XGBoost boosters in JSON) - works on Windows, Linux and Mac."""
+    import joblib
+    if (HYBRID_DIR / "stack_portable.joblib").exists() and (HYBRID_DIR / "xgb_boosters.json").exists():
+        import xgboost as xgb
+        stack = joblib.load(HYBRID_DIR / "stack_portable.joblib")
+        data = json.loads((HYBRID_DIR / "xgb_boosters.json").read_text())["boosters"]
+        for i, js in data.items():
+            b = xgb.Booster()
+            b.load_model(bytearray(js.encode("utf-8")))
+            stack.estimators_[int(i)]._Booster = b
+        return stack
+    return joblib.load(HYBRID_DIR / "stack.joblib")
 
 
 class HybridModel:
@@ -47,7 +66,7 @@ class HybridModel:
         self.features = self.card["features"]
         self.classes = ["benign", "attack"]
         self.pre = joblib.load(HYBRID_DIR / "preprocessor.joblib")
-        self.stack = joblib.load(HYBRID_DIR / "stack.joblib")
+        self.stack = load_stack()
         self.ae = dict(np.load(HYBRID_DIR / "autoencoder_numpy.npz"))
 
     def predict_proba(self, X_df) -> np.ndarray:

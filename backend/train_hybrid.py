@@ -112,6 +112,8 @@ def main() -> int:
     # ---------------- save artifacts ----------------
     joblib.dump(pre, OUT / "preprocessor.joblib", compress=3)
     joblib.dump(model, OUT / "stack.joblib", compress=3)
+    import make_portable_xgb  # portable copy (XGBoost in JSON) used by the server on every OS
+    make_portable_xgb.main()
     ae_cpu = ae.to("cpu").eval()
     torch.save({"state_dict": ae_cpu.state_dict(), "input_dim": int(Xtr_p.shape[1])}, OUT / "autoencoder.pt")
     # numpy copy of the weights: encoder Linear-ReLU-(Dropout)-Linear-ReLU, decoder Linear-ReLU-Linear

@@ -3,7 +3,7 @@
   'use strict';
   const { $, $$, esc, num, pct } = S;
   const D = S.data;
-  const CLS_COLOR = { benign: '#22E39A', 'DoS attack': '#FF4D6A', Replay: '#FFC23D' };
+  const CLS_COLOR = { benign: '#34D399', 'DoS attack': '#FF5A76', Replay: '#FBBF24' };
   const clsKey = (c) => (c === 'benign' ? 'benign' : c === 'Replay' ? 'replay' : 'dos');
 
   /* ------------------------------------------------------------------ */
@@ -19,7 +19,7 @@
   const ORDER = ['benign', 'DoS attack', 'Replay', 'attack'];
   const NICE = { benign: 'Benign', 'DoS attack': 'DoS', Replay: 'Replay', attack: 'Attack' };
   const LONG = { benign: 'Benign (Normal)', 'DoS attack': 'DoS Attack', Replay: 'Replay Attack', attack: 'Attack (DoS / Replay)' };
-  CLS_COLOR.attack = '#FF4D6A';
+  CLS_COLOR.attack = '#FF5A76';
   const kOf = (c) => (c === 'attack' ? 'dos' : clsKey(c));
   const pv = (p, c) => (p && Number.isFinite(p[c]) ? p[c] : 0);
   const lastResult = {};
@@ -168,7 +168,7 @@
         const ix = order.map((c) => j.classes.indexOf(c));
         const n = order.length;
         const cmHtml = ev ? `<div class="cm" style="grid-template-columns:70px repeat(${n},1fr)"><div></div>${order.map((c) => `<div class="hd">${NICE[c]}</div>`).join('')}
-          ${ix.map((ri, i) => { const row = ix.map((ci) => ev.confusion_matrix[ri][ci]); const tot = row.reduce((x, y) => x + y, 0) || 1; return `<div class="hd" style="justify-content:end">${NICE[order[i]]}</div>` + row.map((v, k) => `<div class="cell" style="${binary ? 'height:64px;font-size:16px;' : ''}background:${i === k ? `rgba(0,217,255,${0.25 + 0.6 * v / tot})` : `rgba(47,123,255,${0.06 + 0.4 * v / tot})`};color:${i === k ? '#03121F' : 'var(--text)'}">${num(v)}</div>`).join(''); }).join('')}</div>
+          ${ix.map((ri, i) => { const row = ix.map((ci) => ev.confusion_matrix[ri][ci]); const tot = row.reduce((x, y) => x + y, 0) || 1; return `<div class="hd" style="justify-content:end">${NICE[order[i]]}</div>` + row.map((v, k) => `<div class="cell" style="${binary ? 'height:64px;font-size:16px;' : ''}background:${i === k ? `rgba(34,211,238,${0.25 + 0.6 * v / tot})` : `rgba(91,124,250,${0.06 + 0.4 * v / tot})`};color:${i === k ? '#050B1A' : 'var(--text)'}">${num(v)}</div>`).join(''); }).join('')}</div>
           <p class="muted" style="font-size:11.5px;margin:8px 0 0">Rows = true label from the file${binary ? ' (DoS attack / Replay → Attack)' : ''} · columns = model prediction · ${num(ev.rows_evaluated)} rows with a valid label</p>`
           : `<div class="empty"><i data-lucide="tag"></i>${hasLabelCol ? 'The <code>class</code> column has no labels this model can be scored against, so no metrics can be computed.' : 'The file has no <code>class</code> column, so no confusion matrix or metrics can be computed.'}<br>Predictions below are still real model outputs.</div>`;
         const by3 = ev?.by_true_3class;
@@ -188,7 +188,7 @@
             <div class="chart-box sm mt"><canvas id="dtBar"></canvas></div></article>
           <article class="panel"><div class="panel-h"><h2>Confusion Matrix</h2>${ev ? `<span class="muted" style="font-size:12px">${num(ev.rows_evaluated)} labelled rows</span>` : ''}</div>${cmHtml}
             ${by3 ? `<h4 class="sec-t mt">Detection by original attack type</h4><div class="by3">${Object.entries(by3).map(([c, v]) => { const tot = v.predicted_benign + v.predicted_attack || 1; const good = c === 'benign' ? v.predicted_benign : v.predicted_attack;
-              return `<div><span class="cls ${kOf(c)}">${LONG[c]}</span><div class="by3-bar"><i style="width:${(good / tot * 100).toFixed(1)}%;background:${c === 'benign' ? '#22E39A' : '#00D9FF'}"></i></div><b class="mono">${(good / tot * 100).toFixed(1)}%</b><small class="muted">${c === 'benign' ? 'kept benign' : 'detected'} · ${num(good)} / ${num(tot)}</small></div>`; }).join('')}</div>` : ''}
+              return `<div><span class="cls ${kOf(c)}">${LONG[c]}</span><div class="by3-bar"><i style="width:${(good / tot * 100).toFixed(1)}%;background:${c === 'benign' ? '#34D399' : '#22D3EE'}"></i></div><b class="mono">${(good / tot * 100).toFixed(1)}%</b><small class="muted">${c === 'benign' ? 'kept benign' : 'detected'} · ${num(good)} / ${num(tot)}</small></div>`; }).join('')}</div>` : ''}
             <div class="note mt"><i data-lucide="info"></i><div>${binary ? 'The FYP model answers the operational question “is this traffic an attack?”. DoS and Replay are merged into <b>Attack</b> because they overlap heavily at packet level.' : 'DoS and Replay overlap heavily at packet-feature level — the same ~72–77% 3-class ceiling reported in the thesis.'}${ev && j.total > 20000 ? ' <b>Note:</b> if this file is the full Dataset_T-ITS.csv, about 60% of its rows were used to train the model, so these metrics are optimistic. The unbiased held-out score is on the model card.' : ''}</div></div></article>
         </div>
         <article class="panel mt"><div class="panel-h"><div><h2>Predictions</h2><p>Per-row class and confidence from the ${esc(MODELS[j.key || 'rf'].short)} · “Line” = line number in your CSV</p></div>
@@ -196,12 +196,12 @@
           <div class="table-wrap" style="max-height:460px"><table class="t"><thead><tr><th>Line</th><th>Prediction</th><th>Confidence</th><th>${probHead}</th>${hasLabelCol ? '<th>True label</th><th>Match</th>' : ''}</tr></thead><tbody id="dtRows"></tbody></table></div>
           <div class="pager"><span id="dtPg"></span><button class="btn sm icon" id="dtPrev" aria-label="Previous page"><i data-lucide="chevron-left"></i></button><button class="btn sm icon" id="dtNext" aria-label="Next page"><i data-lucide="chevron-right"></i></button></div></article>`;
         S.chart($('#dtBar'), { type: 'bar', data: { labels: order.map((c) => NICE[c]), datasets: [{ data: order.map((c) => j.counts[c] || 0), backgroundColor: order.map((c) => CLS_COLOR[c]), borderRadius: 6 }] },
-          options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(80,160,230,.08)' } }, y: { grid: { display: false } } } } });
+          options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(120,150,220,.08)' } }, y: { grid: { display: false } } } } });
         let page = 0; const PS = 50;
         const rowsF = () => { const f = $('#dtF').value; return j.rows.filter((r) => !f || (f === '__wrong' ? r.true_label != null && r.true_label !== r.prediction : f === '__nolabel' ? r.true_label == null : r.prediction === f)); };
         const probCell = (p) => binary
-          ? `<div style="display:flex;align-items:center;gap:10px"><div class="prob"><span style="width:${pv(p, 'attack') * 100}%;background:#FF4D6A"></span></div><span class="mono muted" style="font-size:11px">${pv(p, 'attack').toFixed(3)}</span></div>`
-          : `<div style="display:flex;align-items:center;gap:10px"><div class="prob"><span style="width:${pv(p, 'benign') * 100}%;background:#22E39A"></span><span style="width:${pv(p, 'DoS attack') * 100}%;background:#FF4D6A"></span><span style="width:${pv(p, 'Replay') * 100}%;background:#FFC23D"></span></div><span class="mono muted" style="font-size:11px">${pv(p, 'benign').toFixed(2)} / ${pv(p, 'DoS attack').toFixed(2)} / ${pv(p, 'Replay').toFixed(2)}</span></div>`;
+          ? `<div style="display:flex;align-items:center;gap:10px"><div class="prob"><span style="width:${pv(p, 'attack') * 100}%;background:#FF5A76"></span></div><span class="mono muted" style="font-size:11px">${pv(p, 'attack').toFixed(3)}</span></div>`
+          : `<div style="display:flex;align-items:center;gap:10px"><div class="prob"><span style="width:${pv(p, 'benign') * 100}%;background:#34D399"></span><span style="width:${pv(p, 'DoS attack') * 100}%;background:#FF5A76"></span><span style="width:${pv(p, 'Replay') * 100}%;background:#FBBF24"></span></div><span class="mono muted" style="font-size:11px">${pv(p, 'benign').toFixed(2)} / ${pv(p, 'DoS attack').toFixed(2)} / ${pv(p, 'Replay').toFixed(2)}</span></div>`;
         const paint = () => {
           const rows = rowsF(); const pages = Math.max(1, Math.ceil(rows.length / PS)); page = Math.min(page, pages - 1);
           $('#dtRows').innerHTML = rows.slice(page * PS, page * PS + PS).map((r) => {
@@ -231,143 +231,106 @@
   /* ------------------------------------------------------------------ */
   S.view('federated', {
     title: 'Federated Learning Control Room',
-    subtitle: 'Hierarchical FL across 8 UAV clients in 2 clusters — animated replay of the recorded experiment',
+    subtitle: 'Hierarchical FL across 8 UAV clients in 2 clusters — replay of the recorded experiment log',
     render(el) {
       const R = D.federatedRounds || [], cfg = D.config || {}, ft = D.federatedTest || {};
       const full = R[0]?.fullBytes || 0, topk = R[0]?.topkBytes || 0;
       const saving = full ? 1 - topk / full : 0;
       const cm = D.clusterMap || [[0, 2, 4, 6], [1, 3, 5, 7]];
-      const NI = D.nonIid || [];
-      const cmlp = (D.centralTest || []).find((r) => r.model.startsWith('MLP')) || {};
-      const STAGES = ['Broadcast global model', `Local training (${cfg.local_epochs} epoch)`, `Top-k (${cfg.compression_topk}) upload`, 'Cluster aggregation', 'Global aggregation'];
-      const clientCard = (c) => { const n = NI[c] || { samples: 0, benign: 0, dos: 0, replay: 0 }; const t = n.samples || 1;
-        return `<div class="flc" data-c="${c}"><div class="flc-h"><span class="flc-ic">${S.droneSVG(cm[1].includes(c) ? '#A15BFF' : '#00D9FF', false)}</span><span><b class="mono">UAV-${S.pad(c + 1)}</b><small>Client ${c} · ${num(n.samples)} samples</small></span><span class="flc-st" data-st>Idle</span></div>
-          <div class="flc-bar" title="Benign ${n.benign} · DoS ${n.dos} · Replay ${n.replay}"><span style="width:${n.benign / t * 100}%;background:#22E39A"></span><span style="width:${n.dos / t * 100}%;background:#FF4D6A"></span><span style="width:${n.replay / t * 100}%;background:#FFC23D"></span></div>
-          <div class="flc-p"><span data-p style="width:0%"></span></div></div>`; };
       el.innerHTML = `
-      <div class="note" style="margin-bottom:14px"><i data-lucide="history"></i><div><b>Animated replay of a recorded run.</b> All numbers come from <code>federated_round_history.csv</code>, <code>federated_test_metrics.csv</code> and <code>non_iid_client_distribution.csv</code>. No training is executed in the browser.</div></div>
-      <section class="kpis5">
-        ${[['c-cy', 'plane', 'UAV clients', '8', '2 clusters × 4'], ['c-pu', 'git-merge', 'Training rounds', R.length, `${cfg.local_epochs} local epoch / round`], ['c-gr', 'target', 'Federated macro F1', pct(ft.macroF1), `3-class test · centralized MLP ${pct(cmlp.macroF1)}`], ['c-am', 'shrink', 'Upload per round', '−' + (saving * 100).toFixed(1) + '%', `${(full / topk).toFixed(1)}× smaller (top-k ${cfg.compression_topk})`], ['c-rd', 'shuffle', 'Non-IID partition', 'α ' + cfg.dirichlet_alpha, 'Dirichlet label skew']]
-          .map(([c, ic, l, v, sub]) => `<article class="k5 ${c}"><div class="k5-top"><span class="k5-ic"><i data-lucide="${ic}"></i></span><span class="k5-l">${l}</span><span class="tag verified" style="padding:2px 6px">Rec.</span></div><div class="k5-v"><strong>${v}</strong></div><div class="k5-b"><small>${sub}</small></div></article>`).join('')}
-      </section>
-      <article class="panel fl2"><div class="panel-h"><div><h2>Federated Training Topology</h2><p>Clients train locally → cluster relays average updates → global aggregator (weighted FedAvg)</p></div>
-        <div class="right"><span class="chip cyan" id="flRoundTag">Round ${R.length} / ${R.length}</span><button class="btn sm primary" id="flPlay"><i data-lucide="play"></i>Replay training</button><button class="btn sm" id="flStep"><i data-lucide="skip-forward"></i>Next round</button><button class="btn sm" id="flReset"><i data-lucide="rotate-ccw"></i>Reset</button></div></div>
-        <div class="fl-topo" id="flTopo">
-          <div class="fl-col a"><div class="fl-colh"><b>Cluster A</b><small>${cm[0].map((c) => 'UAV-' + S.pad(c + 1)).join(' · ')}</small></div>${cm[0].map(clientCard).join('')}</div>
-          <div class="fl-mid"><svg id="flSvg"></svg>
-            <div class="fl-orb" id="flOrb"><div class="orb-rings"><i></i><i></i><i></i></div><div class="orb-core"><i data-lucide="brain-circuit"></i></div><b>Global model</b><small class="mono" id="flOrbF1">val F1 —</small></div>
-            <div class="fl-relay a" id="flRelA">Agg A</div><div class="fl-relay b" id="flRelB">Agg B</div></div>
-          <div class="fl-col b"><div class="fl-colh"><b>Cluster B</b><small>${cm[1].map((c) => 'UAV-' + S.pad(c + 1)).join(' · ')}</small></div>${cm[1].map(clientCard).join('')}</div>
-        </div>
-        <div class="fl-legend"><span><i style="background:#22E39A"></i>Benign</span><span><i style="background:#FF4D6A"></i>DoS</span><span><i style="background:#FFC23D"></i>Replay</span><span class="muted">· bar = each client's real local class mix</span></div>
-      </article>
-      <article class="panel mt"><div class="panel-h"><div><h3>Five-Round Training Timeline</h3><p>Stage of the current round, and the recorded validation macro F1 after each round</p></div></div>
-        <div class="fl-stages" id="flStages">${STAGES.map((s, i) => `<span>${i + 1} · ${s}</span>`).join('')}</div>
-        <div class="fl-rounds" id="flRounds">${R.map((r) => `<div class="flr" data-r="${r.round}"><i></i><b>Round ${r.round}</b><span class="mono">val F1 ${pct(r.valMacroF1)}</span><small class="mono">acc ${pct(r.valAccuracy)} · ${num(r.topkBytes / 1024)} KB</small></div>`).join('')}</div></article>
+      <div class="note" style="margin-bottom:16px"><i data-lucide="history"></i><div><b>Replay of a recorded run.</b> Numbers come from <code>federated_round_history.csv</code> and <code>federated_test_metrics.csv</code>. The animation illustrates the stages of each round; no training is executed in the browser.</div></div>
+      <div class="fl-top">
+        <article class="panel"><div class="panel-h"><div><h2>Training Topology</h2><p>Client → cluster aggregation → global aggregation (weighted FedAvg)</p></div>${S.tag.verified}</div>
+          <div class="fl-diagram" id="flDia"></div>
+          <div class="fl-stages" id="flStages"><span>1 · Broadcast global model</span><span>2 · Local training (${cfg.local_epochs} epoch)</span><span>3 · Top-k compressed upload</span><span>4 · Cluster aggregation</span><span>5 · Global aggregation</span></div></article>
+        <article class="panel"><div class="panel-h"><h2>Training Progress</h2><span id="flRoundTag" class="chip cyan">Round 0 / ${R.length}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px"><span>Replay progress</span><b class="mono" id="flPct">0%</b></div><div class="progress"><span id="flProg" style="width:0%"></span></div>
+          <dl class="kv mt"><dt>Validation macro F1 (current round)</dt><dd class="mono c-cyan" id="flCur">—</dd><dt>Final test macro F1 (federated)</dt><dd class="mono c-green">${pct(ft.macroF1)}</dd><dt>Final test accuracy</dt><dd class="mono">${pct(ft.accuracy)}</dd>
+          <dt>Communication cost / round</dt><dd class="mono" style="color:var(--green)">−${(saving * 100).toFixed(1)}%</dd><dt>Update compression (top-k ${cfg.compression_topk})</dt><dd class="mono">${(full / topk).toFixed(1)}× smaller</dd>
+          <dt>Model parameters</dt><dd class="mono">${num(ft.parameters || 0)}</dd><dt>Non-IID partition</dt><dd class="mono">Dirichlet α = ${cfg.dirichlet_alpha}</dd></dl>
+          <div class="table-wrap mt"><table class="t"><thead><tr><th>Round</th><th>Train F1</th><th>Val F1</th><th>Val acc.</th><th>Upload (top-k)</th></tr></thead><tbody id="flRows">${R.map((r) => `<tr data-r="${r.round}"><td class="mono">R${r.round}</td><td class="mono">${pct(r.trainMacroF1)}</td><td class="mono c-cyan">${pct(r.valMacroF1)}</td><td class="mono">${pct(r.valAccuracy)}</td><td class="mono">${num(r.topkBytes / 1024)} KB</td></tr>`).join('')}</tbody></table></div>
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn primary" id="flPlay"><i data-lucide="play"></i>Replay training</button><button class="btn" id="flStep"><i data-lucide="skip-forward"></i>Next round</button><button class="btn" id="flReset"><i data-lucide="rotate-ccw"></i>Reset</button></div></article>
+      </div>
       <div class="grid g-2 mt">
         <article class="panel"><div class="panel-h"><div><h3>Macro F1 per Round</h3><p>Recorded training & validation macro F1 (3-class)</p></div>${S.tag.verified}</div><div class="chart-box tall"><canvas id="flF1"></canvas></div></article>
         <article class="panel"><div class="panel-h"><div><h3>Non-IID Data Distribution (α = ${cfg.dirichlet_alpha})</h3><p>Real per-client class counts from the Dirichlet partition</p></div>${S.tag.verified}</div><div class="chart-box tall"><canvas id="flNiid"></canvas></div></article>
       </div>
       <div class="grid g-2 mt">
-        <article class="panel"><div class="panel-h"><div><h3>Communication Compression</h3><p>Upload size per round for all 8 clients (recorded)</p></div>${S.tag.verified}</div>
-          <div class="cmp"><div class="cmp-row"><span>Full model update</span><div class="cmp-bar"><i style="width:100%" class="full"></i></div><b class="mono">${num(full / 1024)} KB</b></div>
-            <div class="cmp-row"><span>Top-k ${cfg.compression_topk} sparse update</span><div class="cmp-bar"><i style="width:${(topk / full * 100).toFixed(1)}%" class="tk" id="flTk"></i></div><b class="mono c-cyan">${num(topk / 1024)} KB</b></div>
-            <div class="cmp-big"><strong>${(full / topk).toFixed(1)}×</strong><span>smaller uploads · ${(saving * 100).toFixed(1)}% less traffic per round · ${num((full - topk) * R.length / 1024)} KB saved over ${R.length} rounds</span></div>
-            <p class="muted" style="font-size:11.5px;margin:0">Top-k keeps the 25% largest parameter changes plus their indices (${num(ft.parameters || 0)} parameters in the MLP).</p></div></article>
-        <article class="panel"><div class="panel-h"><h3>Privacy, Security & Limitations</h3></div>
-          <div class="pl-grid">
-            <div><h4 class="sec-t">Implemented ${S.tag.verified}</h4><ul class="limits ok">
-              <li><i data-lucide="check"></i><span>Raw packet data stays on each client; only model updates are shared (FL design, simulated on one machine)</span></li>
-              <li><i data-lucide="check"></i><span>Hierarchical weighted FedAvg (client → cluster → global)</span></li>
-              <li><i data-lucide="check"></i><span>Top-k (25%) update compression</span></li>
-              <li><i data-lucide="check"></i><span>SHA3-256 update digest timed at ${(D.securityOverhead?.[0]?.signMs ?? 0).toFixed(3)} ms (integrity check, not a signature)</span></li></ul></div>
-            <div><h4 class="sec-t">Not implemented ${S.tag.future}</h4><ul class="limits">
-              <li><i data-lucide="x"></i><span>Post-quantum signatures (ML-DSA / Kyber): not executed, liboqs absent</span></li>
-              <li><i data-lucide="x"></i><span>Secure aggregation / homomorphic encryption</span></li>
-              <li><i data-lucide="x"></i><span>Differential privacy noise</span></li>
-              <li><i data-lucide="x"></i><span>Real distributed UAV devices; only 5 rounds; 3-class macro F1 ${pct(ft.macroF1)}</span></li></ul></div>
-          </div></article>
+        <article class="panel"><div class="panel-h"><div><h3>Communication Cost</h3><p>Upload bytes per round (all 8 clients)</p></div>${S.tag.verified}</div><div class="chart-box"><canvas id="flComm"></canvas></div></article>
+        <article class="panel"><div class="panel-h"><div><h3>Client Participation</h3><p>Samples held by each client in the recorded run</p></div></div>
+          <div class="table-wrap"><table class="t"><thead><tr><th>Client</th><th>UAV</th><th>Cluster</th><th>Samples</th><th>Benign</th><th>DoS</th><th>Replay</th></tr></thead><tbody>${(D.nonIid || []).map((c) => `<tr><td class="mono">${c.client}</td><td class="mono">UAV-${S.pad(c.client + 1)}</td><td>${cm[1].includes(c.client) ? 'B' : 'A'}</td><td class="mono">${num(c.samples)}</td><td class="mono" style="color:var(--green)">${num(c.benign)}</td><td class="mono" style="color:var(--red)">${num(c.dos)}</td><td class="mono" style="color:var(--amber)">${num(c.replay)}</td></tr>`).join('')}</tbody></table></div></article>
       </div>`;
 
-      // ----- topology connectors (redrawn on resize so geometry matches the cards) -----
-      const topo = $('#flTopo'), svg = $('#flSvg'), mid = topo.querySelector('.fl-mid');
-      let geo = null;
-      function layout() {
-        const mr = mid.getBoundingClientRect(); if (!mr.width) return;
-        svg.setAttribute('viewBox', `0 0 ${mr.width} ${mr.height}`);
-        const cy = (c) => { const r = topo.querySelector(`.flc[data-c="${c}"]`).getBoundingClientRect(); return r.top + r.height / 2 - mr.top; };
-        const relA = { x: mr.width * 0.22, y: mr.height / 2 }, relB = { x: mr.width * 0.78, y: mr.height / 2 }, orb = { x: mr.width / 2, y: mr.height / 2 };
-        $('#flRelA').style.left = relA.x + 'px'; $('#flRelB').style.left = relB.x + 'px';
-        geo = { relA, relB, orb, a: cm[0].map((c) => ({ c, y: cy(c) })), b: cm[1].map((c) => ({ c, y: cy(c) })), w: mr.width };
-        let p = '';
-        geo.a.forEach((n) => (p += `<path id="flpa${n.c}" d="M0 ${n.y} C ${relA.x * 0.6} ${n.y}, ${relA.x * 0.5} ${relA.y}, ${relA.x} ${relA.y}" class="fl-ln a"/>`));
-        geo.b.forEach((n) => (p += `<path id="flpb${n.c}" d="M${mr.width} ${n.y} C ${mr.width - (mr.width - relB.x) * 0.6} ${n.y}, ${relB.x + (mr.width - relB.x) * 0.5} ${relB.y}, ${relB.x} ${relB.y}" class="fl-ln b"/>`));
-        p += `<path id="flgA" d="M${relA.x} ${relA.y} L${orb.x - 60} ${orb.y}" class="fl-ln g"/><path id="flgB" d="M${relB.x} ${relB.y} L${orb.x + 60} ${orb.y}" class="fl-ln g"/><g id="flPk"></g>`;
-        svg.innerHTML = p; paintStage();
-      }
-      const ro = new ResizeObserver(layout); ro.observe(topo);
+      // diagram
+      const W = 640, H = 330;
+      const pos = {}; [0, 1].forEach((ci) => cm[ci].forEach((c, k) => { pos[c] = [ci === 0 ? 84 : W - 84, 76 + k * 66]; }));
+      const hubP = [[220, 165], [W - 220, 165]];
+      $('#flDia').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Federated learning topology">
+        <defs><filter id="flg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <rect x="14" y="10" width="140" height="${H - 20}" rx="14" fill="rgba(34,211,238,.04)" stroke="rgba(34,211,238,.5)"/><text x="84" y="34" text-anchor="middle" fill="#22D3EE" font-size="13" font-weight="700">Cluster A</text>
+        <rect x="${W - 154}" y="10" width="140" height="${H - 20}" rx="14" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.55)"/><text x="${W - 84}" y="34" text-anchor="middle" fill="#B9A2FF" font-size="13" font-weight="700">Cluster B</text>
+        <g id="flLinks">${Object.entries(pos).map(([c, [x, y]]) => { const h = hubP[cm[1].includes(+c) ? 1 : 0]; return `<path id="fl${c}" d="M${x} ${y} L${h[0]} ${h[1]}" stroke="rgba(34,211,238,.35)" stroke-width="1.5" fill="none"/>`; }).join('')}
+          ${hubP.map((h, i) => `<path id="flh${i}" d="M${h[0]} ${h[1]} L${W / 2} ${H / 2}" stroke="rgba(34,211,238,.45)" stroke-width="2" fill="none"/>`).join('')}</g>
+        <g id="flPk"></g>
+        ${Object.entries(pos).map(([c, [x, y]]) => `<g transform="translate(${x} ${y})"><rect x="-46" y="-17" width="92" height="34" rx="9" fill="#0F1B36" stroke="${cm[1].includes(+c) ? '#8B5CF6' : '#22D3EE'}" stroke-opacity=".7" class="flNode" data-c="${c}"/><text text-anchor="middle" y="5" fill="#F5F9FF" font-size="13" font-weight="700" font-family="JetBrains Mono">UAV-${S.pad(+c + 1)}</text></g>`).join('')}
+        ${hubP.map((h, i) => `<g transform="translate(${h[0]} ${h[1]})"><circle r="20" fill="#0F1B36" stroke="${i ? '#8B5CF6' : '#22D3EE'}" stroke-width="2"/><text y="4" text-anchor="middle" fill="${i ? '#B9A2FF' : '#22D3EE'}" font-size="11" font-weight="700">${i ? 'Agg B' : 'Agg A'}</text></g>`).join('')}
+        <g transform="translate(${W / 2} ${H / 2})" filter="url(#flg)"><path d="M0 -34 L30 -17 L0 0 L-30 -17 Z" fill="#8BE9F7"/><path d="M-30 -17 L0 0 L0 32 L-30 15 Z" fill="#0A6FD8"/><path d="M30 -17 L0 0 L0 32 L30 15 Z" fill="#0791E8"/></g>
+        <text x="${W / 2}" y="${H / 2 + 56}" text-anchor="middle" fill="#F5F9FF" font-size="13" font-weight="700">Global Aggregator</text></svg>`;
 
-      const f1 = S.chart($('#flF1'), { type: 'line', data: { labels: R.map((r) => 'R' + r.round), datasets: [
-        { label: 'Validation macro F1', data: [], borderColor: '#00D9FF', backgroundColor: 'rgba(0,217,255,.15)', fill: true, tension: .3, pointRadius: 5, pointBackgroundColor: '#00D9FF' },
-        { label: 'Train macro F1', data: [], borderColor: '#A15BFF', borderDash: [5, 4], tension: .3, pointRadius: 4, pointBackgroundColor: '#A15BFF' },
-        { label: `Final test (${pct(ft.macroF1)})`, data: R.map(() => ft.macroF1), borderColor: '#22E39A', borderDash: [2, 4], pointRadius: 0, borderWidth: 1.5 }] },
+      const ctxF1 = $('#flF1');
+      const f1 = S.chart(ctxF1, { type: 'line', data: { labels: R.map((r) => 'R' + r.round), datasets: [
+        { label: 'Validation macro F1', data: [], borderColor: '#22D3EE', backgroundColor: 'rgba(34,211,238,.15)', fill: true, tension: .3, pointRadius: 5, pointBackgroundColor: '#22D3EE' },
+        { label: 'Train macro F1', data: [], borderColor: '#8B5CF6', borderDash: [5, 4], tension: .3, pointRadius: 4, pointBackgroundColor: '#8B5CF6' },
+        { label: `Final test (${pct(ft.macroF1)})`, data: R.map(() => ft.macroF1), borderColor: '#34D399', borderDash: [2, 4], pointRadius: 0, borderWidth: 1.5 }] },
         options: { scales: { y: { min: 0.4, max: 0.7, ticks: { callback: (v) => (v * 100).toFixed(0) + '%' } } }, plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${(c.raw * 100).toFixed(1)}%` } } } } });
-      S.chart($('#flNiid'), { type: 'bar', data: { labels: NI.map((c) => 'UAV-' + S.pad(c.client + 1)), datasets: [
-        { label: 'Benign', data: NI.map((c) => c.benign), backgroundColor: '#22E39A' }, { label: 'DoS', data: NI.map((c) => c.dos), backgroundColor: '#FF4D6A' }, { label: 'Replay', data: NI.map((c) => c.replay), backgroundColor: '#FFC23D' }] },
+      S.chart($('#flNiid'), { type: 'bar', data: { labels: (D.nonIid || []).map((c) => 'UAV-' + S.pad(c.client + 1)), datasets: [
+        { label: 'Benign', data: (D.nonIid || []).map((c) => c.benign), backgroundColor: '#34D399' }, { label: 'DoS', data: (D.nonIid || []).map((c) => c.dos), backgroundColor: '#FF5A76' }, { label: 'Replay', data: (D.nonIid || []).map((c) => c.replay), backgroundColor: '#FBBF24' }] },
         options: { scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true } } } });
+      S.chart($('#flComm'), { type: 'bar', data: { labels: R.map((r) => 'Round ' + r.round), datasets: [{ label: 'Full model upload', data: R.map((r) => r.fullBytes / 1024), backgroundColor: 'rgba(139,92,246,.75)', borderRadius: 5 }, { label: `Top-k (${cfg.compression_topk}) compressed`, data: R.map((r) => r.topkBytes / 1024), backgroundColor: 'rgba(34,211,238,.85)', borderRadius: 5 }] },
+        options: { scales: { y: { title: { display: true, text: 'KB per round' } }, x: { grid: { display: false } } } } });
 
-      // ----- replay engine -----
-      let round = R.length, stage = 4, timer = null, sub = 0;
-      const stageEls = $$('#flStages span');
-      const ST_LABEL = ['Receiving', 'Training', 'Uploading', 'Uploaded', 'Synced'];
+      // replay engine
+      let round = 0, stage = -1, timer = null;
+      const stages = $$('#flStages span');
       function paintStage() {
-        stageEls.forEach((s, i) => { s.classList.toggle('on', i === stage && !!timer); s.classList.toggle('done', i < stage || (i === stage && !timer)); });
-        $$('.flc').forEach((c) => {
-          c.classList.toggle('train', stage === 1 && !!timer); c.classList.toggle('up', stage === 2 && !!timer);
-          c.querySelector('[data-st]').textContent = round === 0 ? 'Idle' : ST_LABEL[stage];
-          c.querySelector('[data-p]').style.width = (round === 0 ? 0 : stage >= 2 ? 100 : stage === 1 ? Math.min(100, sub * 34) : 0) + '%';
-        });
-        $('#flRelA').classList.toggle('hot', stage === 3 && !!timer); $('#flRelB').classList.toggle('hot', stage === 3 && !!timer);
-        $('#flOrb').classList.toggle('hot', stage === 4 && !!timer);
-        const pk = $('#flPk'); if (!pk || !geo) return; let h = '';
-        if (timer && !S.reduced) {
-          const mk = (id, col, rev) => `<circle r="4" fill="${col}" filter="drop-shadow(0 0 4px ${col})"><animateMotion dur="1.1s" repeatCount="indefinite" ${rev ? 'keyPoints="1;0" keyTimes="0;1" calcMode="linear"' : ''}><mpath href="#${id}"/></animateMotion></circle>`;
-          if (stage === 0) { cm[0].forEach((c) => (h += mk('flpa' + c, '#00D9FF', true))); cm[1].forEach((c) => (h += mk('flpb' + c, '#00D9FF', true))); h += mk('flgA', '#00D9FF', true) + mk('flgB', '#00D9FF', true); }
-          if (stage === 2) { cm[0].forEach((c) => (h += mk('flpa' + c, '#A15BFF'))); cm[1].forEach((c) => (h += mk('flpb' + c, '#A15BFF'))); }
-          if (stage === 4) h += mk('flgA', '#22E39A') + mk('flgB', '#22E39A');
-        }
-        pk.innerHTML = h;
+        stages.forEach((s, i) => { s.classList.toggle('on', i === stage); s.classList.toggle('done', i < stage); });
+        const pk = $('#flPk'); pk.innerHTML = '';
+        if (stage < 0 || S.reduced) return;
+        const paths = stage === 0 ? [...Object.keys(pos).map((c) => ['fl' + c, true]), ['flh0', true], ['flh1', true]]
+          : stage === 2 ? Object.keys(pos).map((c) => ['fl' + c, false])
+            : stage === 4 ? [['flh0', false], ['flh1', false]] : [];
+        pk.innerHTML = paths.map(([id, rev]) => `<circle r="4" fill="${stage === 1 ? '#38BDF8' : '#22D3EE'}" filter="url(#flg)"><animateMotion dur="1s" repeatCount="indefinite" ${rev ? 'keyPoints="1;0" keyTimes="0;1" calcMode="linear"' : ''}><mpath href="#${id}"/></animateMotion></circle>`).join('');
+        $$('.flNode').forEach((n) => n.setAttribute('fill', stage === 1 ? 'rgba(56,189,248,.22)' : '#0F1B36'));
       }
       function paint() {
         $('#flRoundTag').textContent = `Round ${round} / ${R.length}`;
+        const p = R.length ? ((round - 1 + (stage + 1) / 5) / R.length) : 0; const pp = Math.max(0, Math.min(1, round ? p : 0));
+        $('#flProg').style.width = pp * 100 + '%'; $('#flPct').textContent = Math.round(pp * 100) + '%';
         const done = R.slice(0, stage === 4 ? round : round - 1);
         f1.data.datasets[0].data = done.map((r) => r.valMacroF1); f1.data.datasets[1].data = done.map((r) => r.trainMacroF1); f1.update();
-        $('#flOrbF1').textContent = done.length ? 'val F1 ' + pct(done.at(-1).valMacroF1) : 'val F1 —';
-        $$('#flRounds .flr').forEach((n) => { const r = +n.dataset.r; n.classList.toggle('done', r <= done.length); n.classList.toggle('cur', r === round && !!timer); });
+        $('#flCur').textContent = done.length ? pct(done[done.length - 1].valMacroF1) : '—';
+        $$('#flRows tr').forEach((tr) => { const n = +tr.dataset.r; tr.style.opacity = n <= done.length ? 1 : 0.35; tr.classList.toggle('sel', n === round); });
         paintStage();
       }
-      let tick = 0;
       function advance() {
-        tick++; sub++;
-        if (stage === 1 && sub < 3) { paintStage(); return; } // training lasts a little longer
-        sub = 0;
         if (round === 0) { round = 1; stage = 0; }
         else if (stage < 4) stage++;
         else if (round < R.length) { round++; stage = 0; }
-        else { stop(); S.toast('Replay finished', `${R.length} rounds · federated test macro F1 ${pct(ft.macroF1)}`, 'ok'); return; }
+        else { stop(); S.toast('Replay finished', `5 rounds · final federated test macro F1 ${pct(ft.macroF1)}`, 'ok'); return; }
         paint();
       }
-      function stop() { clearInterval(timer); timer = null; $('#flPlay').innerHTML = '<i data-lucide="play"></i>Replay training'; S.icons(); paint(); }
+      function stop() { clearInterval(timer); timer = null; $('#flPlay').innerHTML = '<i data-lucide="play"></i>Replay training'; S.icons(); }
       $('#flPlay').onclick = () => {
         if (timer) return stop();
         if (round === R.length && stage === 4) { round = 0; stage = -1; }
-        timer = setInterval(advance, 750); advance();
+        timer = setInterval(advance, 1100); advance();
         $('#flPlay').innerHTML = '<i data-lucide="pause"></i>Pause replay'; S.icons();
       };
-      $('#flStep').onclick = () => { if (timer) stop(); if (round < R.length) round++; stage = 4; paint(); };
-      $('#flReset').onclick = () => { if (timer) stop(); round = 0; stage = -1; paint(); };
-      paint();
-      return () => { clearInterval(timer); ro.disconnect(); };
+      $('#flStep').onclick = () => { stop(); if (round === 0) { round = 1; stage = 4; } else if (round < R.length) { round++; stage = 4; } else stage = 4; paint(); };
+      $('#flReset').onclick = () => { stop(); round = 0; stage = -1; paint(); };
+      // start showing the completed run
+      round = R.length; stage = 4; paint();
+      return () => clearInterval(timer);
     },
   });
 
@@ -403,10 +366,10 @@
           <p class="t2" style="font-size:13px;margin-top:0">Per-prediction explanations (SHAP/LIME values for one packet) are <b>not implemented</b>: the recorded run did not execute SHAP, so no local attributions exist yet. Showing them here would be invented. (The hybrid model itself is now saved and served in the AI Detection Lab, so SHAP can be added on top of it.)</p>
           <ul class="limits"><li><i data-lucide="arrow-right"></i><span>Planned: install <code>shap</code> and compute TreeSHAP for the RF/XGBoost/LightGBM members of the saved stack.</span></li><li><i data-lucide="arrow-right"></i><span>Planned: show a waterfall chart for any row selected in the AI Detection Lab.</span></li></ul></article>
       </div>`;
-      S.chart($('#xaiBar'), { type: 'bar', data: { labels: X.map((x) => x.feature), datasets: [{ data: X.map((x) => x.importance), backgroundColor: X.map((_, i) => (i < 3 ? '#00D9FF' : i < 6 ? 'rgba(0,217,255,.6)' : 'rgba(47,123,255,.55)')), borderRadius: 4 }] },
+      S.chart($('#xaiBar'), { type: 'bar', data: { labels: X.map((x) => x.feature), datasets: [{ data: X.map((x) => x.importance), backgroundColor: X.map((_, i) => (i < 3 ? '#22D3EE' : i < 6 ? 'rgba(34,211,238,.6)' : 'rgba(91,124,250,.55)')), borderRadius: 4 }] },
         options: { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `Δ macro F1: ${c.raw.toFixed(4)}` } } }, scales: { y: { grid: { display: false }, ticks: { font: { family: 'JetBrains Mono', size: 11 } } }, x: { title: { display: true, text: 'Permutation importance (mean macro-F1 drop)' } } } } });
       let acc = 0;
-      S.chart($('#xaiCum'), { type: 'line', data: { labels: X.map((_, i) => i + 1), datasets: [{ label: 'Cumulative share of importance', data: X.map((x) => (acc += x.importance) / tot), borderColor: '#A15BFF', backgroundColor: 'rgba(161,91,255,.15)', fill: true, tension: .3, pointRadius: 3 }] },
+      S.chart($('#xaiCum'), { type: 'line', data: { labels: X.map((_, i) => i + 1), datasets: [{ label: 'Cumulative share of importance', data: X.map((x) => (acc += x.importance) / tot), borderColor: '#8B5CF6', backgroundColor: 'rgba(139,92,246,.15)', fill: true, tension: .3, pointRadius: 3 }] },
         options: { scales: { y: { min: 0, max: 1, ticks: { callback: (v) => v * 100 + '%' } }, x: { title: { display: true, text: 'Top-N features' } } }, plugins: { legend: { display: false } } } });
       const feats = [['wlan.seq', 'MAC sequence number', 'Replay re-sends captured frames, so sequence numbers repeat or jump; flooding produces long monotonic runs.'],
         ['wlan.duration', 'NAV duration (µs)', 'Attack frames reserve the channel for longer, starving other UAVs of airtime.'],

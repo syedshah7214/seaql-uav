@@ -53,6 +53,6 @@
     "macro_f1": 0.9053308512254363,
     "auc": 0.9779562002285216
   },
-  "train_seconds": 1.8,
+  "train_seconds": 2.4,
   "sklearn_note": "Pipeline = SimpleImputer(median, add_indicator) -> RobustScaler(10,90) -> RandomForest"
 }

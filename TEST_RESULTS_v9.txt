@@ -1,0 +1,75 @@
+SEAQL v9 - command-center homepage + themed rooms - test results, 2026-11-04
+==========================================================================
+Scope: frontend only. backend/ code and model artifacts are identical to v8.
+
+1. Layout QA - 11 pages x 1920x1080, 1366x768, 768x1024, 390x844
+   page-level horizontal overflow: none | browser console / page errors: none
+2. New header + homepage features: 29 PASS
+   PASS homepage title
+   PASS five KPI cards
+   PASS KPI values 8 | 2 | 5 | 94.41% | 98.39%
+   PASS no fabricated growth deltas
+   PASS search dropdown opens
+   PASS search "csv" + Enter -> AI Detection Lab
+   PASS search click -> Federated Learning
+   PASS notification panel opens
+   PASS notifications listed (8)
+   PASS badge cleared after opening
+   PASS notification click opens UAV inspection
+   PASS profile panel opens
+   PASS profile panel lists team + supervisor
+   PASS profile panel shows backend online
+   PASS click outside closes panel
+   PASS Start FYP Viva button
+   PASS hero shortcut Detect
+   PASS hero shortcut Learn
+   PASS hero shortcut Explain
+   PASS hero shortcut Collaborate
+   PASS room banner + theme on swarm
+   PASS room banner + theme on attack
+   PASS room banner + theme on detect
+   PASS room banner + theme on federated
+   PASS room banner + theme on xai
+   PASS room banner + theme on fleet
+   PASS room banner + theme on incidents
+   PASS room banner + theme on research
+   PASS room banner + theme on about
+   29 passed | page errors: none
+3. AI Detection Lab UI test: 14/14 PASS
+   PASS Hybrid AE-Stack is the default Detection Lab model
+   PASS model card shows the Hybrid model
+   PASS model comparison table rendered
+     hybrid / all held-out rows: {"Model":"Hybrid AE-Stack · binary","Total Samples":"6,621","Benign (Normal)":"2,101 (31.7%)","Attack (DoS / Replay)":"4,520 (68.3%)","Ground-truth labels":"6,621 valid · 0 empty","Accuracy (labelled rows)":"94.4%","Macro F1 (labelled rows)":"93.4%","ROC AUC":"98.4%","Attack precision / recall":"98.3% / 93.8%"}
+   PASS UI reproduces held-out 94.4% / 93.4% / 98.4% from raw CSV upload
+   PASS binary 2x2 confusion matrix rendered
+   PASS per-attack-type detection breakdown shown
+   PASS hybrid prediction CSV export
+   PASS hybrid: unlabelled CSV -> predictions only
+   PASS hybrid: missing/invalid labels handled separately
+   PASS invalid dataset -> friendly error, no stale results
+   PASS hybrid: full dataset (with empty labels) works + optimism note
+   PASS switching to Random Forest baseline
+   PASS RF baseline sample still 74.1% (3-class, 3x3 matrix)
+   PASS switching back restores last hybrid result
+   Invalid JSON responses: 0 | errors: none
+4. Regression (attack lab, CSV checks, viva, FL, topology, 3D fallback): 30/30 PASS
+   (the single 422 console message is the intended "malformed CSV rejected" test)
+5. Backend API (strict JSON, NaN=0, Infinity=0):
+   === [hybrid] ALL 6,621 held-out rows (raw CSV): HTTP 200 in 0.6s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9441 macro_f1=0.9336 auc=0.9839  CM=[[1808, 77], [293, 4443]]
+   === [hybrid] hybrid held-out sample (2,000): HTTP 200 in 0.3s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9445 macro_f1=0.9349 auc=0.9834  CM=[[560, 18], [93, 1329]]
+   === [hybrid] FULL Dataset_T-ITS.csv (54,783 rows): HTTP 200 in 2.7s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9597 macro_f1=0.9519 auc=0.9937  CM=[[9230, 195], [1140, 22537]]
+   === [hybrid] unlabelled sample (300): HTTP 200 in 0.2s · strict JSON OK · NaN=0 Infinity=0
+   === [hybrid] dirty file (NaN / inf / bad labels): HTTP 200 in 0.2s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.9453 macro_f1=0.9356 auc=0.9877  CM=[[107, 3], [18, 256]]
+   === [hybrid] invalid dataset: HTTP 422 in 0.0s · strict JSON OK · NaN=0 Infinity=0
+   === [hybrid] header only: HTTP 422 in 0.0s · strict JSON OK · NaN=0 Infinity=0
+   === [rf] RF baseline - labelled sample (2,000): HTTP 200 in 0.1s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.7410 macro_f1=0.7396 auc=0.8918  CM=[[557, 113, 52], [248, 369, 91], [1, 13, 556]]
+   === [rf] RF baseline - FULL Dataset_T-ITS.csv: HTTP 200 in 1.7s · strict JSON OK · NaN=0 Infinity=0
+     accuracy=0.7868 macro_f1=0.7878 auc=0.9297  CM=[[9389, 1370, 912], [3352, 7379, 1275], [21, 129, 9275]]
+6. backend/verify_hybrid.py: matches_model_card = true (acc 0.9441, macro F1 0.9336, AUC 0.9839)
+7. Performance (headless Chromium, software rendering, 1366x768): dashboard, detect, federated,
+   attack, incidents, research, viva, about ~60 fps. Reduced-motion: decorative animations off.
