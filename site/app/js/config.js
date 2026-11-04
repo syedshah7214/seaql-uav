@@ -4,3 +4,6 @@
  * for example:  window.SEAQL_API_BASE = 'https://YOUR-HF-USERNAME-seaql-api.hf.space/';
  */
 window.SEAQL_API_BASE = '';
+
+/* Free online Detection Lab (Streamlit Community Cloud) - same saved models, real predictions. */
+window.SEAQL_LAB_URL = 'https://seaql-detection-lab.streamlit.app/';

@@ -1,0 +1,8 @@
+# Streamlit Community Cloud (streamlit_app.py). Model packages must match the versions used to save the models.
+streamlit>=1.40
+scikit-learn==1.9.1
+xgboost==3.4.1
+lightgbm==4.7.0
+numpy==2.5.3
+pandas==3.0.5
+joblib>=1.4

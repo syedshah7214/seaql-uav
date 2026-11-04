@@ -5,11 +5,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Large local-only files (trained models ship in the project ZIP, not on GitHub/Vercel)
+# Large local-only files. The portable Hybrid model and the RF baseline ARE committed (needed by streamlit_app.py).
 *.zip
 backend/models/hybrid/stack.joblib
-backend/models/hybrid/stack_portable.joblib
-backend/models/seaql_rf_3class.joblib
 docs/screenshots_v5/
 docs/screenshots_v6/
 docs/screenshots_v7/

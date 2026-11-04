@@ -96,7 +96,7 @@
           if (['loading', 'training'].includes(health.models.hybrid.status) || health.models.rf.status === 'loading') setTimeout(() => { if (S.current() === 'detect') checkBackend(); }, 4000);
         } catch (e) { health = null; paintStatus(); modelCard(); setRunState(); }
       }
-      const offNote = `<div class="note err" style="margin-bottom:12px"><i data-lucide="plug-zap"></i><div><b>Python backend not reachable${S.API_BASE ? ` at <code>${esc(S.API_BASE)}</code>` : ''}.</b> Predictions need the model server. Locally, run <code>python backend\\server.py</code> in PowerShell and open <code>http://localhost:8000/dashboard.html</code>. On the hosted site, set the backend URL in <code>app/js/config.js</code>. No predictions are faked while it is offline.</div></div>`;
+      const offNote = `<div class="note err" style="margin-bottom:12px"><i data-lucide="plug-zap"></i><div><b>Python backend not reachable${S.API_BASE ? ` at <code>${esc(S.API_BASE)}</code>` : ''}.</b> Predictions need the model server. Locally, run <code>python backend\\server.py</code> in PowerShell and open <code>http://localhost:8000/dashboard.html</code>. On this hosted website, use the online Detection Lab button below. No predictions are faked while it is offline.${window.SEAQL_LAB_URL ? `<div style="margin-top:10px"><a class="btn primary sm" href="${esc(window.SEAQL_LAB_URL)}" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Open the online Detection Lab (real model, free)</a></div>` : ''}</div></div>`;
       function modelCard() {
         const k = currentModel, st = health?.models?.[k];
         $('#dtModelTag').innerHTML = st?.status === 'ready' ? S.tag.model : '';
