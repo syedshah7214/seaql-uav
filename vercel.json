@@ -19,7 +19,25 @@
       ]
     },
     {
-      "source": "/(dashboard.html|app/js/(.*)|app/css/(.*))",
+      "source": "/dashboard.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/app/js/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/app/css/:path*",
       "headers": [
         {
           "key": "Cache-Control",
