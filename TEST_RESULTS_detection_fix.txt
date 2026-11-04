@@ -1,0 +1,121 @@
+SEAQL v3.1 - AI Detection Lab JSON fix: test results (2026-11-03)
+Backend: backend/server.py (strict JSON, allow_nan=False). Each response parsed with a strict JSON parser that rejects NaN/Infinity.
+
+## Before the fix (full Dataset_T-ITS.csv)
+21,679 'true_label': NaN tokens -> JSON.parse fails (same error as reported).
+
+## API tests
+
+=== FULL Dataset_T-ITS.csv: HTTP 200, 8.89 MB, strict JSON parse OK, NaN tokens=0, Infinity=0
+  rows: 54774 | uploaded: 54783 | skipped: 9 | counts: {'DoS attack': 16039, 'Replay': 18859, 'benign': 19876}
+  labels: {'valid': 33102, 'missing': 21672, 'invalid': 0, 'invalid_examples': {}}
+  eval: n=33102 acc=0.7868 macroF1=0.7878 ovrAUC=0.9297 binAUC=0.9862 note=None
+  CM (DoS,Replay,benign): [[9389, 1370, 912], [3352, 7379, 1275], [21, 129, 9275]]
+  rows with null true_label: 21672 {'row': 9428, 'prediction': 'Replay', 'confidence': 0.5596, 'probabilities': {'DoS attack': 0.2134, 'Replay': 0.5596, 'benign': 0.2271}, 'true_label': None}
+  warn: 21,672 row(s) have an empty class label. They still receive predictions but are excluded from accuracy / F1 / AUC.
+  warn: 9 row(s) had no usable packet values and were skipped.
+  warn: Non-numeric values treated as missing (imputed) in: frame.len (9), frame.protocols (9), wlan.duration (9), wlan.ra (9), wlan.ta (9), wlan.da (9), wlan.sa (9), wlan.seq (9
+  warn: 5 unused column(s) ignored: timestamp_c, frame.number, wlan.bssid, wlan.frag, tcp.ack_raw
+
+=== labelled sample (2,000): HTTP 200, 0.33 MB, strict JSON parse OK, NaN tokens=0, Infinity=0
+  rows: 2000 | uploaded: 2000 | skipped: 0 | counts: {'DoS attack': 806, 'Replay': 495, 'benign': 699}
+  labels: {'valid': 2000, 'missing': 0, 'invalid': 0, 'invalid_examples': {}}
+  eval: n=2000 acc=0.7410 macroF1=0.7396 ovrAUC=0.8918 binAUC=0.978 note=None
+  CM (DoS,Replay,benign): [[557, 113, 52], [248, 369, 91], [1, 13, 556]]
+  rows with null true_label: 0 
+
+=== unlabelled sample (300): HTTP 200, 0.04 MB, strict JSON parse OK, NaN tokens=0, Infinity=0
+  rows: 300 | uploaded: 300 | skipped: 0 | counts: {'DoS attack': 108, 'Replay': 74, 'benign': 118}
+  labels: None
+  eval: None (no valid labels)
+  rows with null true_label: 0 
+  warn: No 'class' column found - predictions only, no evaluation metrics.
+
+=== dirty file (NaN/inf/bad labels): HTTP 200, 0.07 MB, strict JSON parse OK, NaN tokens=0, Infinity=0
+  rows: 399 | uploaded: 400 | skipped: 1 | counts: {'DoS attack': 158, 'Replay': 91, 'benign': 150}
+  labels: {'valid': 384, 'missing': 10, 'invalid': 5, 'invalid_examples': {'unknown_attack': 5}}
+  eval: n=384 acc=0.7109 macroF1=0.7079 ovrAUC=0.8811 binAUC=0.9782 note=None
+  CM (DoS,Replay,benign): [[97, 24, 16], [53, 66, 18], [0, 0, 110]]
+  rows with null true_label: 15 {'row': 2, 'prediction': 'DoS attack', 'confidence': 0.5419, 'probabilities': {'DoS attack': 0.5419, 'Replay': 0.4581, 'benign': 0.0}, 'true_label': None}
+  warn: 10 row(s) have an empty class label and 5 have an unrecognised label. They still receive predictions but are excluded from accuracy / F1 / AUC. Unrecognised values: 'unkn
+  warn: 1 row(s) had no usable packet values and were skipped.
+  warn: Non-numeric values treated as missing (imputed) in: frame.len (5), wlan.seq (5)
+
+=== benign-only labels: HTTP 200, 0.02 MB, strict JSON parse OK, NaN tokens=0, Infinity=0
+  rows: 109 | uploaded: 109 | skipped: 0 | counts: {'DoS attack': 0, 'Replay': 0, 'benign': 109}
+  labels: {'valid': 109, 'missing': 0, 'invalid': 0, 'invalid_examples': {}}
+  eval: n=109 acc=1.0000 macroF1=1.0000 ovrAUC=None binAUC=None note=Multi-class AUC needs all three classes in the labelled rows; found only: benign.
+  CM (DoS,Replay,benign): [[0, 0, 0], [0, 0, 0], [0, 0, 109]]
+  rows with null true_label: 0 
+  warn: Non-numeric values treated as missing (imputed) in: frame.len (2), wlan.seq (1)
+
+=== invalid dataset: HTTP 422, 0.00 MB, strict JSON parse OK, NaN tokens=0, Infinity=0
+  error: This does not look like a UAV packet CSV: only 0 of the 32 required packet columns were found. Missing: frame.len, frame.protocols, wlan.duration, wlan.ra, wlan.ta, wlan.da, wlan.sa, wlan.seq, llc.type, ip.hdr_len ...
+
+=== header only: HTTP 422, 0.00 MB, strict JSON parse OK, NaN tokens=0, Infinity=0
+  error: The CSV has a header but no data rows.
+
+## Browser end-to-end tests (Playwright, real upload + Run Detection)
+
+[full] failed=false
+  msg: Processed Dataset_T-ITS.csv in 1.65 s — 54,774 rows classified. | 21,672 row(s) have an empty class label. They still receive predictions but are excluded from ac
+  results: Total Samples=54,774; Benign (Normal)=19,876 (36.3%); DoS Attack=16,039 (29.3%); Replay Attack=18,859 (34.4%); Ground-truth labels=33,102 valid · 21,672 empty; Accuracy (labelled rows)=78.7%; Macro F1 (labelled rows)=78.8%; Macro OvR AUC=93.0%; Attack-vs-benign AUC=98.6%
+  confusion cells: 9 | table rows on page: 50 | Page 1 of 1096 · 54,774 rows
+  "rows without label" filter: Page 1 of 434 · 21,672 rows | first row: 9428 Replay Attack 56.0% 0.23 / 0.21 / 0.56 no label —
+
+[labelled] failed=false
+  msg: Processed uav_traffic_test_sample.csv in 0.15 s — 2,000 rows classified.
+  results: Total Samples=2,000; Benign (Normal)=699 (34.9%); DoS Attack=806 (40.3%); Replay Attack=495 (24.8%); Ground-truth labels=2,000 valid · 0 empty; Accuracy (labelled rows)=74.1%; Macro F1 (labelled rows)=74.0%; Macro OvR AUC=89.2%; Attack-vs-benign AUC=97.8%
+  confusion cells: 9 | table rows on page: 50 | Page 1 of 40 · 2,000 rows
+
+[unlabelled] failed=false
+  msg: Processed uav_traffic_unlabeled_sample.csv in 0.05 s — 300 rows classified. | No 'class' column found - predictions only, no evaluation metrics.
+  results: Total Samples=300; Benign (Normal)=118 (39.3%); DoS Attack=108 (36.0%); Replay Attack=74 (24.7%); Ground-truth labels=none (unlabelled file)
+  confusion cells: 0 | table rows on page: 50 | Page 1 of 6 · 300 rows
+
+[dirty] failed=false
+  msg: Processed dirty.csv in 0.08 s — 399 rows classified. | 10 row(s) have an empty class label and 5 have an unrecognised label. They still receive predictions but ar
+  results: Total Samples=399; Benign (Normal)=150 (37.6%); DoS Attack=158 (39.6%); Replay Attack=91 (22.8%); Ground-truth labels=384 valid · 10 empty · 5 invalid; Accuracy (labelled rows)=71.1%; Macro F1 (labelled rows)=70.8%; Macro OvR AUC=88.1%; Attack-vs-benign AUC=97.8%
+  confusion cells: 9 | table rows on page: 50 | Page 1 of 8 · 399 rows
+
+[invalid] failed=true
+  msg: Detection failed: This does not look like a UAV packet CSV: only 0 of the 32 required packet columns were found. Missing: frame.len, frame.protocols, wlan.durat
+  results: 
+  confusion cells: 0 | table rows on page: 0 | undefined
+
+Invalid-JSON responses seen by browser: 0 | console/page errors: none (only the expected HTTP 422 for the invalid file)
+
+## Regression suite (all other modules)
+PASS pause stops simulation ticks
+PASS replay scenario compromises UAV-06
+PASS stop attack -> recovery restores nodes
+PASS speed slider sets 3x
+PASS reset clears incidents
+PASS nav dashboard
+PASS nav swarm
+PASS nav attack
+PASS nav detect
+PASS nav federated
+PASS nav xai
+PASS nav fleet
+PASS nav incidents
+PASS nav research
+PASS nav viva
+PASS nav about
+PASS alerts CSV export
+PASS incident drawer opens
+PASS incident report download
+PASS Esc closes drawer
+PASS alert search filter
+PASS malformed CSV rejected with clear error
+PASS non-CSV file rejected
+PASS unlabelled CSV predicts 300 rows
+PASS prediction export
+PASS viva next to slide 10
+PASS viva restart
+PASS FL next round
+PASS topology node opens UAV inspection
+errors: [
+  'Failed to load resource: the server responded with a status of 422 (Unprocessable Content)'
+]
+PASS 2D fallback when WebGL disabled

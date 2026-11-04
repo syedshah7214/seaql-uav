@@ -1,0 +1,132 @@
+{
+  "model": "Hybrid AE-Stacked Ensemble (binary attack detection)",
+  "source_script": "seaql-repo/src/uav_fl_hybrid_model_binary.py (functions imported, not re-implemented)",
+  "task": "binary: benign vs attack (DoS attack + Replay)",
+  "classes": [
+    "benign",
+    "attack"
+  ],
+  "features": [
+    "frame.len",
+    "frame.protocols",
+    "wlan.duration",
+    "wlan.ra",
+    "wlan.ta",
+    "wlan.da",
+    "wlan.sa",
+    "wlan.seq",
+    "llc.type",
+    "ip.hdr_len",
+    "ip.len",
+    "ip.id",
+    "ip.flags",
+    "ip.ttl",
+    "ip.proto",
+    "ip.src",
+    "ip.dst",
+    "tcp.srcport",
+    "tcp.dstport",
+    "tcp.seq_raw",
+    "tcp.hdr_len",
+    "tcp.flags",
+    "tcp.window_size",
+    "tcp.options",
+    "udp.srcport",
+    "udp.dstport",
+    "udp.length",
+    "data.data",
+    "data.len",
+    "wlan.fc.type",
+    "wlan.fc.subtype",
+    "time_since_last_packet"
+  ],
+  "rows_used": 33102,
+  "split": {
+    "seed": 42,
+    "train": 19860,
+    "validation_unused_by_script": 6621,
+    "test": 6621
+  },
+  "smote": {
+    "applied_to": "training split only",
+    "rows_before": 19860,
+    "rows_after": 28410
+  },
+  "architecture": {
+    "autoencoder": "trained on benign training rows; features = reconstruction MSE + latent vector",
+    "base_learners": [
+      "RandomForest(400)",
+      "XGBoost(350)",
+      "LightGBM(350)",
+      "ExtraTrees(400)",
+      "MLP(160,80)"
+    ],
+    "meta_learner": "LogisticRegression(class_weight=balanced)",
+    "stacking_cv": 5,
+    "hybrid_feature_dim": 49
+  },
+  "heldout_metrics": {
+    "accuracy": 0.9441172028394502,
+    "balanced_accuracy": 0.9486423197899492,
+    "macro_f1": 0.9336005210110929,
+    "attack_precision": 0.9829646017699115,
+    "attack_recall": 0.9381334459459459,
+    "benign_precision": 0.8605425987624941,
+    "benign_recall": 0.9591511936339523,
+    "auc": 0.983887285826941
+  },
+  "heldout_confusion_matrix": {
+    "labels": [
+      "benign",
+      "attack"
+    ],
+    "matrix": [
+      [
+        1808,
+        77
+      ],
+      [
+        293,
+        4443
+      ]
+    ]
+  },
+  "heldout_by_true_3class": {
+    "benign": {
+      "predicted_benign": 1808,
+      "predicted_attack": 77
+    },
+    "DoS attack": {
+      "predicted_benign": 109,
+      "predicted_attack": 2225
+    },
+    "Replay": {
+      "predicted_benign": 184,
+      "predicted_attack": 2218
+    }
+  },
+  "thesis_recorded_metrics": {
+    "accuracy": 0.9433620299048482,
+    "macro_f1": 0.9326936148831858,
+    "auc": 0.9832917010179941,
+    "source": "seaql-repo/results/metrics/hybrid_binary_test_metrics.csv"
+  },
+  "numpy_inference_check": {
+    "max_abs_feature_diff": 4194304.0,
+    "identical_predictions": true
+  },
+  "training_seconds": 85.1,
+  "stack_fit_seconds": 75.6,
+  "environment": {
+    "python": "3.13.18",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "scikit-learn": "1.9.1",
+    "xgboost": "3.4.1",
+    "lightgbm": "4.7.0",
+    "imbalanced-learn": "0.14.2",
+    "torch": "2.15.0+cu132",
+    "device": "cpu"
+  },
+  "trained_at_utc": "2026-11-03T23:28:16Z"
+}

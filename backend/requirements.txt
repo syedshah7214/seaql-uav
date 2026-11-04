@@ -1,0 +1,15 @@
+# SEAQL backend - serving the saved models (AI Detection Lab).
+# Windows: use Python 3.12 or 3.13 (these exact versions have Windows wheels for both).
+#
+# The Hybrid AE-Stacked Ensemble and Random Forest are saved with joblib (pickle),
+# so scikit-learn / XGBoost / LightGBM must match the versions used to save them.
+scikit-learn==1.9.1
+xgboost==3.4.1
+lightgbm==4.7.0
+numpy==2.5.3
+pandas==3.0.5
+joblib>=1.4
+#
+# PyTorch is NOT needed to serve predictions (the autoencoder runs in NumPy).
+# To re-train the Hybrid model install the extra packages:
+#   pip install -r backend/requirements-train.txt

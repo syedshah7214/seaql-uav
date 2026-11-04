@@ -1,0 +1,12 @@
+# Vercel hosts only the static website. The Python model server runs on Hugging Face (see DEPLOY.md).
+.venv
+backend
+seaql-repo/data
+*.zip
+site/*.zip
+deploy
+Dockerfile
+.dockerignore
+run_seaql.ps1
+run_seaql.bat
+TEST_RESULTS_*.txt

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>SEAQL | UAV Mission Control</title>
+<meta name="description" content="SEAQL — UAV Swarm Cybersecurity Platform: security operations dashboard, 3D swarm digital twin, attack simulation, AI intrusion detection, federated learning and explainable AI.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 3 L42 10 V23 C42 34 34 41.5 24 45 C14 41.5 6 34 6 23 V10 Z' fill='%2307111F' stroke='%2300D9FF' stroke-width='3'/%3E%3Crect x='19' y='19' width='10' height='10' rx='2' fill='%2300D9FF'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app/css/app.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="Main navigation">
+    <a class="brand" href="#/dashboard"><span id="brandLogo"></span><span><b>SEAQL</b><small>UAV Swarm Security Platform</small></span></a>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot" id="sideStatus" aria-live="polite"></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="page-title" style="display:flex;gap:12px;align-items:flex-start">
+        <button class="btn icon menu-btn" id="menuBtn" aria-label="Open navigation"><i data-lucide="menu"></i></button>
+        <div><h1 id="pageTitle">Security Command Center</h1><p id="pageSub"></p></div>
+      </div>
+      <div class="top-actions">
+        <span class="clock" id="clock" aria-label="Local time"></span>
+        <span class="pill live" id="simPill" aria-live="polite"></span>
+        <button class="btn sm" id="simToggle"></button>
+        <div class="bell-wrap"><button class="btn sm icon" id="bellBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false"><i data-lucide="bell"></i></button><span class="bell-count" id="bellCount" hidden>0</span><div class="notif-pop" id="notifPop" role="dialog" aria-label="Notifications"></div></div>
+        <button class="btn sm icon" id="fsBtn" aria-label="Toggle fullscreen"><i data-lucide="maximize-2"></i></button>
+        <button class="btn sm viva-cta" id="vivaBtn"><i data-lucide="presentation"></i><span>Start FYP Viva</span></button>
+      </div>
+    </header>
+    <div id="view" tabindex="-1"></div>
+    <footer class="foot"><span>SEAQL · Scalable, Explainable &amp; Adaptive Quantum-Resilient Federated Learning for UAV Swarm Cybersecurity</span><span>Bahria University, Lahore Campus · BSIT FYP · 2026</span></footer>
+  </main>
+</div>
+<div class="scrim" id="scrim"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="app/js/config.js"></script>
+<script src="app/vendor/lucide.min.js"></script>
+<script src="app/vendor/chart.umd.min.js"></script>
+<script src="app/vendor/three.min.js"></script>
+<script src="app/data/seaql-data.js"></script>
+<script src="app/js/core.js"></script>
+<script src="app/js/topology.js"></script>
+<script src="app/js/views-ops.js"></script>
+<script src="app/js/mission.js"></script>
+<script src="app/js/twin3d.js"></script>
+<script src="app/js/views-ai.js"></script>
+<script src="app/js/views-research.js"></script>
+<script>S.boot();</script>
+</body>
+</html>

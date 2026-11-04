@@ -1,0 +1,6 @@
+# Extra packages to RE-TRAIN the Hybrid AE-Stacked Ensemble with the original research script
+# (seaql-repo/src/uav_fl_hybrid_model_binary.py imports all of these).
+-r requirements.txt
+torch>=2.1
+imbalanced-learn==0.14.2
+matplotlib>=3.7

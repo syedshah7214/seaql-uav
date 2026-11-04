@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/mission", "destination": "/dashboard.html" }
+  ],
+  "headers": [
+    { "source": "/app/(vendor|fonts)/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, immutable" }] }
+  ]
+}

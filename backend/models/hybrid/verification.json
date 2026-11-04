@@ -1,0 +1,29 @@
+{
+  "test_rows": 6621,
+  "accuracy": 0.9441172028394502,
+  "macro_f1": 0.9336005210110929,
+  "roc_auc": 0.9838861656749589,
+  "confusion_matrix": [
+    [
+      1808,
+      77
+    ],
+    [
+      293,
+      4443
+    ]
+  ],
+  "threshold_0.5_matches_stack_predict": true,
+  "model_card_metrics": {
+    "accuracy": 0.9441172028394502,
+    "macro_f1": 0.9336005210110929,
+    "auc": 0.983887285826941
+  },
+  "auc_abs_difference_vs_model_card": 1.1201519820591699e-06,
+  "matches_model_card": true,
+  "numpy_vs_torch": {
+    "max_relative_diff": 2.16877680259131e-07,
+    "median_relative_diff": 0.0,
+    "reconstruction_error_magnitude_max": 26575273721856.0
+  }
+}

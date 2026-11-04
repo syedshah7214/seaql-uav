@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.vercel/
+.DS_Store
+Thumbs.db
+
+*.zip
+backend/models/hybrid/stack.joblib
+backend/models/seaql_rf_3class.joblib
+docs/screenshots_v5/
+docs/screenshots_v6/
