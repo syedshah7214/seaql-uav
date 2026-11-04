@@ -17,6 +17,22 @@
           "value": "public, max-age=604800, immutable"
         }
       ]
+    },
+    {
+      "source": "/(dashboard.html|app/js/(.*)|app/css/(.*))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/dashboard.html",
+      "permanent": false
     }
   ]
 }
