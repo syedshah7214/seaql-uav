@@ -467,7 +467,9 @@ card = models["hybrid"].card
 hm = card["heldout_metrics"]
 
 nodes = ["CSV", "Checks", "Impute + scale", "Autoencoder", "5-model stack", "Benign / Attack"]
-st.markdown(f"""
+EMBEDDED = str(st.query_params.get("seaql_embed", "")) == "1"   # inside the SEAQL website, which shows its own room banner
+if not EMBEDDED:
+  st.markdown(f"""
 <div class="room"><div class="room-grid">
   <div>
     <div class="kicker">{icon("scan", 16)} Room 03 · AI Diagnostic Laboratory</div>
@@ -484,10 +486,10 @@ st.markdown(f"""
 with st.container(key="deck"):
     panel_head("Run detection", "Choose a model and a file — predictions run live on the trained models",
                '<span class="tag real">real model output</span>')
-    d1, d2, d3 = st.columns([1.15, .8, 1.6], gap="medium")
+    d1, d2, d3 = st.columns([1.45, .85, 1.3], gap="medium")
     with d1:
-        mode = st.segmented_control("Model", ["Hybrid AE-Stack", "Random Forest", "Compare both"], default="Hybrid AE-Stack",
-                                    key="mode") or "Hybrid AE-Stack"
+        mode = st.segmented_control("Model", ["Hybrid", "Random Forest", "Compare"], default="Hybrid",
+                                    key="mode") or "Hybrid"
     with d2:
         src = st.segmented_control("Data", ["Sample", "Upload CSV"], default="Sample", key="src") or "Sample"
     text, fname = None, None
@@ -505,7 +507,7 @@ with st.container(key="deck"):
 if text is None:
     st.info("Upload a CSV file (same columns as Dataset_T-ITS.csv; an optional `class` column enables evaluation), or switch to a sample.")
 else:
-    keys = {"Hybrid AE-Stack": ["hybrid"], "Random Forest": ["rf"], "Compare both": ["hybrid", "rf"]}[mode]
+    keys = {"Hybrid": ["hybrid"], "Random Forest": ["rf"], "Compare": ["hybrid", "rf"]}[mode]
     if "rf" in keys and not models["rf_ok"]:
         st.error(f"Random Forest baseline is not available: {models['rf_error']}")
         keys = [k for k in keys if k != "rf"]
