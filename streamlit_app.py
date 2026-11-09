@@ -367,7 +367,8 @@ def verdict(res: dict):
 
 def show_result(res: dict, key: str):
     verdict(res)
-    components.html(live_stream_html(res), height=580, scrolling=False)
+    if not EMBEDDED:  # inside the SEAQL website the stream runs natively in the page instead
+        components.html(live_stream_html(res), height=580, scrolling=False)
     ev = res.get("evaluation")
     att = sum(v for k, v in res["counts"].items() if k != "benign")
     mean_conf = sum(r["confidence"] for r in res["rows"]) / max(1, len(res["rows"]))
