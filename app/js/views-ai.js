@@ -80,10 +80,10 @@
       function paintStatus() {
         Object.keys(MODELS).forEach((k) => {
           const st = health?.models?.[k]?.status || (health ? 'error' : 'offline');
-          $(`[data-state="${k}"]`).innerHTML = st === 'ready' ? '<span class="dot"></span>Ready' : st === 'training' ? '<span class="spinner"></span>Training' : st === 'loading' ? '<span class="spinner"></span>Loading' : '<span class="dot red"></span>' + (st === 'offline' ? 'Offline' : 'Unavailable');
+          $(`[data-state="${k}"]`).innerHTML = st === 'ready' ? '<span class="dot"></span>Ready' : st === 'training' ? '<span class="spinner"></span>Training' : st === 'loading' ? '<span class="spinner"></span>Loading' : (st === 'offline' && window.SEAQL_LAB_URL ? '<span class="dot"></span>Online lab' : '<span class="dot red"></span>' + (st === 'offline' ? 'Offline' : 'Unavailable'));
         });
         const st = health?.models?.[currentModel]?.status;
-        $('#dtStatus').innerHTML = !health ? '<span class="pill crit"><span class="dot red"></span>Backend offline</span>'
+        $('#dtStatus').innerHTML = !health ? (window.SEAQL_LAB_URL ? '<span class="pill live"><span class="dot"></span>Online lab active</span>' : '<span class="pill crit"><span class="dot red"></span>Backend offline</span>')
           : st === 'ready' ? '<span class="pill live"><span class="dot"></span>Model ready</span>'
             : st === 'error' ? '<span class="pill crit"><span class="dot red"></span>Model unavailable</span>' : '<span class="pill paused"><span class="dot amber"></span>Model loading…</span>';
       }
