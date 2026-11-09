@@ -140,9 +140,9 @@ def show_result(res: dict, key: str):
     left, right = st.columns([1, 1])
     with left:
         st.markdown("##### Predicted classes")
-        st.altair_chart(counts_chart(res["counts"]), use_container_width=True)
+        st.altair_chart(counts_chart(res["counts"]), width="stretch")
         st.markdown("##### Confidence distribution")
-        st.altair_chart(confidence_chart(res["rows"]), use_container_width=True)
+        st.altair_chart(confidence_chart(res["rows"]), width="stretch")
     with right:
         if ev:
             st.markdown(f'##### Evaluation on {ev["rows_evaluated"]:,} labelled rows')
@@ -152,13 +152,13 @@ def show_result(res: dict, key: str):
             auc = ev.get("binary_auc") if key == "hybrid" else (ev.get("macro_ovr_auc") or ev.get("binary_auc"))
             m[2].metric("ROC AUC" if key == "hybrid" else "AUC", pct(auc))
             st.markdown("##### Confusion matrix (rows = true, columns = predicted)")
-            st.altair_chart(confusion_chart(ev, classes), use_container_width=True)
+            st.altair_chart(confusion_chart(ev, classes), width="stretch")
             if ev.get("auc_note"):
                 st.caption(ev["auc_note"])
             if ev.get("by_true_3class"):
                 st.markdown("##### Which attack types were caught")
                 bt = pd.DataFrame(ev["by_true_3class"]).T.rename(columns={"predicted_benign": "→ benign", "predicted_attack": "→ attack"})
-                st.dataframe(bt, use_container_width=True)
+                st.dataframe(bt, width="stretch")
         else:
             st.markdown("##### Evaluation")
             st.caption("This file has no `class` column, so only predictions are shown (no accuracy / F1 / AUC).")
@@ -167,7 +167,7 @@ def show_result(res: dict, key: str):
                            **{f"P({k})": v for k, v in r["probabilities"].items()},
                            **({"True label": r.get("true_label")} if "true_label" in r else {})} for r in res["rows"]])
     st.markdown("##### Row-level predictions")
-    st.dataframe(table.head(1000), use_container_width=True, height=320, hide_index=True)
+    st.dataframe(table.head(1000), width="stretch", height=320, hide_index=True)
     if len(table) > 1000:
         st.caption(f"Showing the first 1,000 of {len(table):,} rows. The download has all rows.")
     st.download_button("Download all predictions (CSV)", table.to_csv(index=False).encode("utf-8"),
@@ -207,7 +207,7 @@ with st.sidebar:
             fname = up.name
             text = up.getvalue().decode("utf-8", errors="replace")
     st.divider()
-    st.link_button("Open the full SEAQL dashboard", WEBSITE, use_container_width=True)
+    st.link_button("Open the full SEAQL dashboard", WEBSITE, width="stretch")
     st.caption("Team: Syed Measum Shah · Arooba Mansoor (03-135231-009)\n\nSupervisor: Ms. Munaza Sher\n\nBahria University, Lahore Campus · BSIT")
 
 tab_run, tab_card = st.tabs(["Run detection", "Recorded research results"])
@@ -239,7 +239,7 @@ with tab_run:
                              "Predicted attack": sum(v for c, v in r["counts"].items() if c != "benign"),
                              "Accuracy": pct(ev.get("accuracy")), "Macro F1": pct(ev.get("macro_f1")),
                              "Benign-vs-attack AUC": pct(ev.get("binary_auc"))})
-            st.dataframe(pd.DataFrame(comp), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(comp), width="stretch", hide_index=True)
             st.caption("The Hybrid model is binary (benign / attack). The Random Forest predicts 3 classes "
                        "(benign / DoS attack / Replay), so its accuracy is on a harder task; the benign-vs-attack AUC "
                        "compares both on the same question. Note: the Random Forest was trained on a different data split, so some "
@@ -263,7 +263,7 @@ with tab_card:
     c[2].metric("ROC AUC", pct(hm["auc"]))
     c[3].metric("Balanced accuracy", pct(hm["balanced_accuracy"]))
     cm = card["heldout_confusion_matrix"]
-    st.altair_chart(confusion_chart({"confusion_matrix": cm["matrix"]}, cm["labels"]), use_container_width=True)
+    st.altair_chart(confusion_chart({"confusion_matrix": cm["matrix"]}, cm["labels"]), width="stretch")
     try:
         rf = json.loads((BACKEND / "models" / "model_metrics.json").read_text())
         st.markdown("##### Random Forest baseline (3-class, held-out)")
