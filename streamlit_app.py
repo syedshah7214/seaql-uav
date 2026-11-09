@@ -26,6 +26,8 @@ WEBSITE = "https://seaql-uav.vercel.app"
 sys.path.insert(0, str(BACKEND))
 
 import server as SV  # noqa: E402  (stdlib-only at import time; nothing is started)
+import streamlit.components.v1 as components  # noqa: E402
+from live_stream import live_stream_html  # noqa: E402
 
 st.set_page_config(page_title="SEAQL · AI Detection Lab", page_icon="🛡️", layout="wide",
                    initial_sidebar_state="collapsed")
@@ -365,6 +367,7 @@ def verdict(res: dict):
 
 def show_result(res: dict, key: str):
     verdict(res)
+    components.html(live_stream_html(res), height=580, scrolling=False)
     ev = res.get("evaluation")
     att = sum(v for k, v in res["counts"].items() if k != "benign")
     mean_conf = sum(r["confidence"] for r in res["rows"]) / max(1, len(res["rows"]))
