@@ -397,7 +397,7 @@
         <div class="pop-links"><a class="btn sm" href="#/about"><i data-lucide="book-open"></i>Team &amp; Docs</a><a class="btn sm" href="https://github.com/syedshah7214/seaql-uav" target="_blank" rel="noopener"><i data-lucide="github"></i>Repository</a></div>`;
       S.icons();
       fetch(S.api('api/health')).then((r) => r.json()).then((j) => { const e = S.$('#profApi'); if (e) e.innerHTML = `<span style="color:var(--green)">online</span> · ${(j.models && j.models.hybrid && j.models.hybrid.status) || 'ok'}`; })
-        .catch(() => { const e = S.$('#profApi'); if (e) e.innerHTML = '<span style="color:var(--amber)">offline</span> (static mode)'; });
+        .catch(() => { const e = S.$('#profApi'); if (e) e.innerHTML = window.SEAQL_LAB_URL ? '<span style="color:var(--green)">online</span> · Streamlit Cloud' : '<span style="color:var(--amber)">offline</span> (static mode)'; });
     };
     Object.entries(pops).forEach(([b, p]) => S.$('#' + b).addEventListener('click', (e) => {
       e.stopPropagation(); const el = S.$('#' + p), open = !el.classList.contains('open');
