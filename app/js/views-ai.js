@@ -30,6 +30,7 @@
     subtitle: 'Run the trained models on UAV network traffic (CSV) — real predictions from the local Python backend',
     render(el) {
       el.innerHTML = `
+      <div id="dtOnline" hidden></div>
       <div class="model-switch" role="radiogroup" aria-label="Detection model" id="dtModels">
         ${Object.entries(MODELS).map(([k, m]) => `<button role="radio" data-m="${k}" class="ms-btn ${k}"><span class="ms-ic"><i data-lucide="${k === 'hybrid' ? 'brain-circuit' : 'trees'}"></i></span><span><b>${m.label}</b><small>${m.sub}</small></span><span class="ms-state" data-state="${k}"><span class="spinner"></span></span></button>`).join('')}
       </div>
@@ -95,6 +96,19 @@
           paintStatus(); modelCard(); comparison(); setRunState();
           if (['loading', 'training'].includes(health.models.hybrid.status) || health.models.rf.status === 'loading') setTimeout(() => { if (S.current() === 'detect') checkBackend(); }, 4000);
         } catch (e) { health = null; paintStatus(); modelCard(); setRunState(); }
+        onlineLab();
+      }
+      // No local/remote backend: show the free hosted Detection Lab (Streamlit, same saved models) inside this page.
+      function onlineLab() {
+        const box = $('#dtOnline'); if (!box) return;
+        const lab = (window.SEAQL_LAB_URL || '').trim();
+        if (health || !lab) { box.hidden = true; box.innerHTML = ''; return; }
+        if (box.dataset.ready) { box.hidden = false; return; }
+        const src = lab.replace(/\/?$/, '/') + '?embed=true&embed_options=dark_theme';
+        box.innerHTML = `<article class="panel" style="margin-bottom:16px"><div class="panel-h"><div><h2>Online Detection Lab · real model</h2><p>Running the same saved Hybrid AE-Stacked Ensemble and Random Forest on Streamlit Community Cloud. Pick a sample or upload a CSV below.</p></div><a class="btn sm" href="${esc(lab)}" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Open full screen</a></div>
+          <div class="muted" style="font-size:12px;margin:0 0 8px">If the app was idle it may show a "wake up" button first; it starts in about a minute.</div>
+          <iframe title="SEAQL online Detection Lab" src="${esc(src)}" loading="lazy" style="width:100%;height:1150px;border:0;border-radius:12px;background:#071018" allow="clipboard-write"></iframe></article>`;
+        box.dataset.ready = '1'; box.hidden = false; S.icons();
       }
       const offNote = `<div class="note err" style="margin-bottom:12px"><i data-lucide="plug-zap"></i><div><b>Python backend not reachable${S.API_BASE ? ` at <code>${esc(S.API_BASE)}</code>` : ''}.</b> Predictions need the model server. Locally, run <code>python backend\\server.py</code> in PowerShell and open <code>http://localhost:8000/dashboard.html</code>. On this hosted website, use the online Detection Lab button below. No predictions are faked while it is offline.${window.SEAQL_LAB_URL ? `<div style="margin-top:10px"><a class="btn primary sm" href="${esc(window.SEAQL_LAB_URL)}" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Open the online Detection Lab (real model, free)</a></div>` : ''}</div></div>`;
       function modelCard() {
