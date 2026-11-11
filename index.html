@@ -22,10 +22,92 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0D14'/%3E%3Ccircle cx='9' cy='9' r='3.4' fill='none' stroke='%236C8CFF' stroke-width='1.8'/%3E%3Ccircle cx='23' cy='9' r='3.4' fill='none' stroke='%236C8CFF' stroke-width='1.8'/%3E%3Ccircle cx='9' cy='23' r='3.4' fill='none' stroke='%236C8CFF' stroke-width='1.8'/%3E%3Ccircle cx='23' cy='23' r='3.4' fill='none' stroke='%236C8CFF' stroke-width='1.8'/%3E%3Cpath d='M11 11L21 21M21 11L11 21' stroke='%236C8CFF' stroke-width='1.6'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="site-v10.css?v=10">
 </head>
 <body>
+<!-- ===== CINEMATIC INTRO (v10): big SEAQL + flying drone; scrolling reveals the website ===== -->
+<section class="cine" id="cine" aria-label="SEAQL introduction">
+  <div class="cine-stage">
+    <canvas id="cine-stars" aria-hidden="true"></canvas>
+    <div class="cine-aurora" aria-hidden="true"></div>
+    <div class="cine-floor" aria-hidden="true"></div>
+    <div class="cine-top" data-fade="0.14">
+      <span class="cine-dot"></span>BSIT Final Year Project · Bahria University, Lahore Campus
+    </div>
+    <h1 class="cine-title"><span class="cine-glow" aria-hidden="true"></span><span class="cine-word">SEAQL</span></h1>
+    <div class="cine-platform" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+    <div class="cine-drone" aria-hidden="true"><div class="cine-drone-bob"><div class="cine-drone-tilt">
+      <svg viewBox="0 0 900 520" class="cd-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="cdShell" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B5590"/><stop offset=".45" stop-color="#1A2848"/><stop offset="1" stop-color="#0A1226"/></linearGradient>
+          <linearGradient id="cdCanopy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FB4FF" stop-opacity=".55"/><stop offset="1" stop-color="#2B3F6E" stop-opacity="0"/></linearGradient>
+          <linearGradient id="cdArm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C64A0"/><stop offset="1" stop-color="#151F3A"/></linearGradient>
+          <linearGradient id="cdMotor" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0D1530"/><stop offset=".5" stop-color="#3A4F86"/><stop offset="1" stop-color="#0D1530"/></linearGradient>
+          <radialGradient id="cdDisc" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#67E8F9" stop-opacity=".05"/><stop offset=".72" stop-color="#67E8F9" stop-opacity=".16"/><stop offset=".95" stop-color="#A78BFA" stop-opacity=".38"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></radialGradient>
+          <linearGradient id="cdBlade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C7D2FE" stop-opacity="0"/><stop offset=".2" stop-color="#E0E7FF" stop-opacity=".85"/><stop offset=".5" stop-color="#94A3B8" stop-opacity=".9"/><stop offset=".8" stop-color="#E0E7FF" stop-opacity=".85"/><stop offset="1" stop-color="#C7D2FE" stop-opacity="0"/></linearGradient>
+          <radialGradient id="cdLens" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#ECFEFF"/><stop offset=".25" stop-color="#22D3EE"/><stop offset=".7" stop-color="#0E7490"/><stop offset="1" stop-color="#062033"/></radialGradient>
+          <radialGradient id="cdCore" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ECFEFF"/><stop offset=".35" stop-color="#22D3EE"/><stop offset="1" stop-color="#22D3EE" stop-opacity="0"/></radialGradient>
+          <linearGradient id="cdBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22D3EE" stop-opacity=".55"/><stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/></linearGradient>
+          <radialGradient id="cdHalo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#22D3EE" stop-opacity=".30"/><stop offset=".6" stop-color="#8B5CF6" stop-opacity=".10"/><stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/></radialGradient>
+        </defs>
+        <ellipse cx="450" cy="250" rx="420" ry="190" fill="url(#cdHalo)"/>
+        <!-- scanning beam -->
+        <polygon class="cd-beam" points="438,330 462,330 600,520 300,520" fill="url(#cdBeam)"/>
+        <!-- back props (behind body) -->
+        <g transform="translate(250 156)"><ellipse rx="128" ry="26" fill="url(#cdDisc)" class="cd-disc"/><g transform="scale(1 .2)"><g class="cd-blade"><rect x="-122" y="-9" width="244" height="18" rx="9" fill="url(#cdBlade)"/></g></g></g>
+        <g transform="translate(650 156)"><ellipse rx="128" ry="26" fill="url(#cdDisc)" class="cd-disc"/><g transform="scale(1 .2)"><g class="cd-blade rev"><rect x="-122" y="-9" width="244" height="18" rx="9" fill="url(#cdBlade)"/></g></g></g>
+        <!-- back arms + motors -->
+        <path d="M392 222 L262 168" stroke="url(#cdArm)" stroke-width="20" stroke-linecap="round"/>
+        <path d="M508 222 L638 168" stroke="url(#cdArm)" stroke-width="20" stroke-linecap="round"/>
+        <g><rect x="232" y="158" width="36" height="30" rx="8" fill="url(#cdMotor)"/><ellipse cx="250" cy="160" rx="18" ry="6" fill="#5B74B8"/></g>
+        <g><rect x="632" y="158" width="36" height="30" rx="8" fill="url(#cdMotor)"/><ellipse cx="650" cy="160" rx="18" ry="6" fill="#5B74B8"/></g>
+        <circle cx="250" cy="190" r="4" fill="#fff" class="cd-strobe"/><circle cx="650" cy="190" r="4" fill="#fff" class="cd-strobe d2"/>
+        <!-- landing gear -->
+        <path d="M398 296 L372 368 M502 296 L528 368" stroke="#24345E" stroke-width="9" stroke-linecap="round"/>
+        <path d="M340 370 H404 M496 370 H560" stroke="#3B5590" stroke-width="7" stroke-linecap="round"/>
+        <!-- body -->
+        <path d="M322 248 C322 206 380 188 450 188 C520 188 578 206 578 248 C578 288 522 310 450 310 C378 310 322 288 322 248 Z" fill="url(#cdShell)" stroke="#5D7BC4" stroke-opacity=".7" stroke-width="2"/>
+        <ellipse cx="450" cy="226" rx="92" ry="28" fill="url(#cdCanopy)"/>
+        <path d="M352 268 C392 292 508 292 548 268" fill="none" stroke="#22D3EE" stroke-width="3.5" stroke-linecap="round" class="cd-led"/>
+        <path d="M372 210 C410 198 490 198 528 210" fill="none" stroke="#C7D2FE" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>
+        <!-- SEAQL core emblem -->
+        <circle cx="450" cy="248" r="30" fill="url(#cdCore)" class="cd-core"/>
+        <path d="M450 232 L464 240 L464 256 L450 264 L436 256 L436 240 Z" fill="#0B1530" stroke="#67E8F9" stroke-width="2"/>
+        <circle cx="450" cy="248" r="5" fill="#ECFEFF"/>
+        <!-- camera gimbal -->
+        <rect x="430" y="300" width="40" height="16" rx="6" fill="#18264A"/>
+        <circle cx="450" cy="326" r="17" fill="#101B38" stroke="#4C64A0" stroke-width="2"/>
+        <circle cx="450" cy="326" r="10" fill="url(#cdLens)" class="cd-lens"/>
+        <!-- front arms + motors -->
+        <path d="M368 262 L182 268" stroke="url(#cdArm)" stroke-width="24" stroke-linecap="round"/>
+        <path d="M532 262 L718 268" stroke="url(#cdArm)" stroke-width="24" stroke-linecap="round"/>
+        <path d="M368 256 L186 260" stroke="#7D97D6" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>
+        <path d="M532 256 L714 260" stroke="#7D97D6" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>
+        <g><rect x="148" y="250" width="44" height="38" rx="10" fill="url(#cdMotor)"/><ellipse cx="170" cy="252" rx="22" ry="7" fill="#5B74B8"/></g>
+        <g><rect x="708" y="250" width="44" height="38" rx="10" fill="url(#cdMotor)"/><ellipse cx="730" cy="252" rx="22" ry="7" fill="#5B74B8"/></g>
+        <circle cx="170" cy="292" r="6" fill="#FF5A76" class="cd-nav"/><circle cx="730" cy="292" r="6" fill="#34D399" class="cd-nav d2"/>
+        <!-- front props (in front of body) -->
+        <g transform="translate(170 244)"><ellipse rx="150" ry="32" fill="url(#cdDisc)" class="cd-disc"/><g transform="scale(1 .21)"><g class="cd-blade"><rect x="-144" y="-10" width="288" height="20" rx="10" fill="url(#cdBlade)"/></g></g></g>
+        <g transform="translate(730 244)"><ellipse rx="150" ry="32" fill="url(#cdDisc)" class="cd-disc"/><g transform="scale(1 .21)"><g class="cd-blade rev"><rect x="-144" y="-10" width="288" height="20" rx="10" fill="url(#cdBlade)"/></g></g></g>
+      </svg>
+    </div></div></div>
+    <p class="cine-sub" data-fade="0.2">Scalable · Explainable · Adaptive · Quantum-Resilient Federated Learning<br class="br-wide"> for UAV Swarm Cybersecurity</p>
+    <div class="cine-hud" data-fade="0.22">
+      <div><b>94.3%</b><span>Hybrid accuracy</span></div>
+      <div><b>98.3%</b><span>ROC AUC</span></div>
+      <div><b>8 · 2 · 5</b><span>UAVs · FL clusters · rounds</span></div>
+    </div>
+    <div class="cine-bottom" data-fade="0.1">
+      <div class="cine-team">Syed Measum Shah · Arooba Mansoor &nbsp;|&nbsp; Supervisor: Ms. Munaza Sher</div>
+      <a href="#top-site" class="cine-enter" data-enter><span class="cine-mouse"><i></i></span>Scroll to enter</a>
+    </div>
+    <div class="cine-dim" aria-hidden="true"></div>
+  </div>
+</section>
+<div id="top-site"></div>
+
 
 <div class="scroll-progress" id="scroll-progress"></div>
 
@@ -515,6 +597,7 @@
 </div>
 
 <script src="assets/chart.umd.min.js" defer></script>
-<script src="script.js" defer></script>
+<script src="script.js?v=10" defer></script>
+<script src="intro.js?v=10" defer></script>
 </body>
 </html>

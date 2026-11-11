@@ -1110,7 +1110,8 @@ function initHeroScrollShrink() {
   let ticking = false;
   function update() {
     const heroHeight = heroSection.offsetHeight;
-    const progress = Math.min(Math.max(window.scrollY / (heroHeight * 0.75), 0), 1);
+    const rel = window.scrollY - heroSection.offsetTop; // intro sits above the hero
+    const progress = Math.min(Math.max(rel / (heroHeight * 0.75), 0), 1);
     const scale = 1 - progress * 0.22;
     const translateY = -progress * 70;
     const opacity = 1 - progress * 0.9;
