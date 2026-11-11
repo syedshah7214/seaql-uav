@@ -180,7 +180,7 @@ footer { position: relative; z-index: 1; background: linear-gradient(180deg, tra
   .cine-top { font-size: .6rem; letter-spacing: .16em; padding: 0 12px; }
   .cine-team { font-size: .6rem; }
 }
-@media (max-height: 640px) { .cine-sub { display: none; } }
+@media (max-height: 520px) { .cine-sub { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .cine-aurora, .cine-floor, .cine-drone-bob, .cd-beam, .cine-platform i, .cd-core, .cd-disc { animation: none !important; }
   .cd-blade { animation-duration: 1.2s !important; }
@@ -190,3 +190,23 @@ footer { position: relative; z-index: 1; background: linear-gradient(180deg, tra
 .ra-toggle { transition: opacity .35s, transform .35s; }
 /* overflow-x:hidden on html/body turns them into scroll containers and breaks position:sticky */
 html, body { overflow-x: clip !important; }
+
+/* ---------- intro layout v10.1: flow layout that fits any screen (no overlapping text) ---------- */
+.cine-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3.2vh 16px 2.6vh; }
+.cine-top { position: relative; top: auto; left: auto; right: auto; margin-bottom: 1.4vh; flex: none; }
+.cine-title { position: relative; top: auto; left: auto; right: auto; flex: none; font-size: clamp(60px, min(20vw, 26vh), 330px); line-height: .92; }
+.cine-drone { position: relative; left: auto; top: auto; margin-left: 0; flex: none;
+  width: min(84vw, 980px, 92vh); margin-top: calc(clamp(60px, min(20vw, 26vh), 330px) * -0.40); margin-bottom: calc(min(84vw, 980px, 92vh) * -0.19); }
+.cine-sub { position: relative; bottom: auto; left: auto; right: auto; flex: none; margin: 1.2vh auto 0; text-shadow: 0 2px 12px rgba(3,6,15,.9); }
+.cine-bottom { position: relative; bottom: auto; left: auto; right: auto; flex: none; margin-top: 1.8vh; gap: 10px; }
+.cine-team { text-shadow: 0 2px 10px rgba(3,6,15,.95); }
+.cine-platform { bottom: auto; top: var(--plat-top, 60%); }
+.cine-hud { display: none; }
+@media (min-width: 1500px) and (min-height: 780px) { .cine-hud { display: grid; } }
+@media (max-height: 560px) { .cine-sub { display: none; } .cine-top { display: none; } }
+@media (max-width: 720px) {
+  .cine-title { font-size: clamp(56px, 21vw, 120px); }
+  .cine-drone { width: 96vw; margin-top: calc(clamp(56px, 21vw, 120px) * -0.30); margin-bottom: -16vw; }
+  .cine-sub { font-size: .9rem; max-width: 92vw; }
+  .cine-top { margin-bottom: 4vh; }
+}

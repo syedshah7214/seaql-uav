@@ -71,6 +71,9 @@
     title.style.transform = `translate3d(0, ${t * -6}vh, 0) scale(${1 + t * 0.55})`;
     title.style.letterSpacing = `${0.02 + t * 0.35}em`;
     title.style.opacity = String(1 - seg(p, 0.12, 0.62));
+    // keep the holographic platform under the drone whatever the screen size (offsets ignore transforms)
+    const ph = platform.offsetHeight || 0;
+    platform.style.top = (drone.offsetTop + drone.offsetHeight * 0.70 - ph / 2) + 'px';
     platform.style.opacity = String(1 - seg(p, 0.0, 0.4));
     platform.style.transform = `translateX(-50%) scale(${1 + seg(p, 0, 0.5) * 0.4})`;
     fades.forEach((el) => { el.style.opacity = String(1 - seg(p, 0, +el.dataset.fade || 0.18)); });
